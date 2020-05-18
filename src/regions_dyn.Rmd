@@ -29,12 +29,13 @@ covid19\_ua](https://github.com/VasiaPiven/covid19_ua).
 
 Побудуємо графіки поширення коронавірусної інфекції COVID-19
 (спричиненої вірусом SARS-CoV-2) по областях. Для цього скористаємось
-бібліотеками функцій `ggplot2` для створення графіків та `tidyverse`
-для підготовки даних.
+бібліотеками функцій з колекції [`tidyverse`](https://tidyverse.org),
+зокрема `ggplot2` для створення графіків, `readr` для зчитування, та
+`dplyr` для підготовки.
 
 ```{r, message = FALSE}
-library(ggplot2)
 library(tidyverse)
+library(ggridges)
 ```
 
 Якщо системні налаштування локалі не співпадають з бажаними, їх можна змінити
@@ -183,7 +184,56 @@ plot_susp
 	       caption = "Дані: ЦГЗ та НСЗУ"))
 ```
 
-[Повернутись на головну](index.html)
+## Інші варіанти
+
+Всі області одразу (тут іще треба поліпшувати) із використанням
+бібліотеки
+[`ggridges`](https://cran.r-project.org/web/packages/ggridges/index.html)
+(кількість летальних випадків):
+
+```{r daily_area_regions_dyn_death_ridges, fig.height=8.5}
+(ggplot(daily_area_reg_dyn,
+        aes(x=zvit_date, y=registration_area,
+            height=new_death,
+            group=registration_area))
+        + geom_ridgeline()
+        + theme_ridges()
+		+ xlab("Дата")
+		+ ylab("Летальних випадків"))
+```
+
+Коли був зареєстрований перший випадок в кожній області.
+
+```{r}
+area_first <- area_dyn %>%
+    select(zvit_date, registration_area) %>%
+    group_by(registration_area) %>%
+    summarise(zvit_date=min(zvit_date))
+
+latest <- max(area_first$zvit_date)
+```
+
+Створити так званий &laquo;lolipop&raquo; графік:
+
+```{r daily_area_regions_first_zvit, fig.height=8.5}
+(ggplot(area_first, aes(x=registration_area, y=zvit_date))
+    + geom_segment(aes(x=registration_area,
+                       xend=registration_area,
+                       y=latest, yend=zvit_date),
+                   color="grey")
+    + geom_point(color="orange", size=4)
+    + coord_flip()
+    + theme_light()
+    + theme(
+          panel.grid.major.x = element_blank(),
+          panel.border = element_blank(),
+          axis.ticks.x = element_blank())
+    + xlab("")
+    + ylab("Дата першого звіту"))
+```
+
+[Повернутись на головну](index.html) або [повідомити про
+помилку]((https://github.com/vityok/covid19_ua/issues))
 
 [wiki.R]: https://uk.wikipedia.org/w/index.php?title=R_(%D0%BC%D0%BE%D0%B2%D0%B0_%D0%BF%D1%80%D0%BE%D0%B3%D1%80%D0%B0%D0%BC%D1%83%D0%B2%D0%B0%D0%BD%D0%BD%D1%8F)&oldid=28060661
 

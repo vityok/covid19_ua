@@ -12,11 +12,11 @@
 Підготовка даних
 ----------------
 
-Побудуємо графіки поширення коронавірусної інфекції COVID-19 (спричиненої вірусом SARS-CoV-2) по областях. Для цього скористаємось бібліотеками функцій `ggplot2` для створення графіків та `tidyverse` для підготовки даних.
+Побудуємо графіки поширення коронавірусної інфекції COVID-19 (спричиненої вірусом SARS-CoV-2) по областях. Для цього скористаємось бібліотеками функцій з колекції [`tidyverse`](https://tidyverse.org), зокрема `ggplot2` для створення графіків, `readr` для зчитування, та `dplyr` для підготовки.
 
 ``` r
-library(ggplot2)
 library(tidyverse)
+library(ggridges)
 ```
 
 Якщо системні налаштування локалі не співпадають з бажаними, їх можна змінити навіть тоді, коли сеанс роботи в R розпочато, для цього знадобиться функція [`Sys.setlocale`](https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/locales):
@@ -178,4 +178,54 @@ plot_susp
 
 <img src="fig_regions_dyn/daily_area_regions_dyn_death-1.png" width="672" />
 
-[Повернутись на головну](index.html)
+Інші варіанти
+-------------
+
+Всі області одразу (тут іще треба поліпшувати) із використанням бібліотеки [`ggridges`](https://cran.r-project.org/web/packages/ggridges/index.html) (кількість летальних випадків):
+
+``` r
+(ggplot(daily_area_reg_dyn,
+        aes(x=zvit_date, y=registration_area,
+            height=new_death,
+            group=registration_area))
+        + geom_ridgeline()
+        + theme_ridges()
+        + xlab("Дата")
+        + ylab("Летальних випадків"))
+```
+
+<img src="fig_regions_dyn/daily_area_regions_dyn_death_ridges-1.png" width="672" />
+
+Коли був зареєстрований перший випадок в кожній області.
+
+``` r
+area_first <- area_dyn %>%
+    select(zvit_date, registration_area) %>%
+    group_by(registration_area) %>%
+    summarise(zvit_date=min(zvit_date))
+
+latest <- max(area_first$zvit_date)
+```
+
+Створити так званий «lolipop» графік:
+
+``` r
+(ggplot(area_first, aes(x=registration_area, y=zvit_date))
+    + geom_segment(aes(x=registration_area,
+                       xend=registration_area,
+                       y=latest, yend=zvit_date),
+                   color="grey")
+    + geom_point(color="orange", size=4)
+    + coord_flip()
+    + theme_light()
+    + theme(
+          panel.grid.major.x = element_blank(),
+          panel.border = element_blank(),
+          axis.ticks.x = element_blank())
+    + xlab("")
+    + ylab("Дата першого звіту"))
+```
+
+<img src="fig_regions_dyn/daily_area_regions_first_zvit-1.png" width="672" />
+
+[Повернутись на головну](index.html) або [повідомити про помилку]((https://github.com/vityok/covid19_ua/issues))
