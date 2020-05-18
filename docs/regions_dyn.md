@@ -1,9 +1,18 @@
 Динаміка поширення коронавірусної інфекції по областях
 ================
 
-[Україна проти COVID-19: ні поразки, ні перемоги. Ми у групі країн, які найгірше справляються з пандемією](https://texty.org.ua/fragments/100954/ukrayina-proty-covid-19-ni-porazky-ni-peremohy/ "Тексти: Україна проти COVID-19: ні поразки, ні перемоги. Ми у групі країн, які найгірше справляються з пандемією")
+Нещодавно сайт "Тексти" поширив чудову статтю «[Україна проти COVID-19: ні поразки, ні перемоги. Ми у групі країн, які найгірше справляються з пандемією](https://texty.org.ua/fragments/100954/ukrayina-proty-covid-19-ni-porazky-ni-peremohy/ "Тексти: Україна проти COVID-19: ні поразки, ні перемоги. Ми у групі країн, які найгірше справляються з пандемією")» з цікавим графіком, на якому було зображено динаміку поширення коронавірусної хвороби в різних країнах. Добова кількість виявлених випадків була нормалізована для кожної країни, а тому графік дає можливість подивитись саме на динаміку, а не на масштаб епідемії у кожній окремій країні.
 
-Побудуємо графіки поширення коронавірусної інфекції по областях. Для цього скористаємось бібліотеками функцій `ggplot2` для створення графіків та `tidyverse` для підготовки даних.
+Нижче буде побудовано чимось схожий графік динаміки поширення коронавірусної інфекції COVID-19 в Україні, в розрізі областей, але без нормалізації. Аналі зроблений в системі R ([прочитати більше у Вікі](https://uk.wikipedia.org/w/index.php?title=R_(%D0%BC%D0%BE%D0%B2%D0%B0_%D0%BF%D1%80%D0%BE%D0%B3%D1%80%D0%B0%D0%BC%D1%83%D0%B2%D0%B0%D0%BD%D0%BD%D1%8F)&oldid=28060661)).
+
+Також у Вікі можна дізнатись більше про [перебіг епідемії в Україні](https://uk.wikipedia.org/wiki/%D0%9A%D0%BE%D1%80%D0%BE%D0%BD%D0%B0%D0%B2%D1%96%D1%80%D1%83%D1%81%D0%BD%D0%B0_%D1%85%D0%B2%D0%BE%D1%80%D0%BE%D0%B1%D0%B0_2019_%D0%B2_%D0%A3%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%96).
+
+Всі вихідні дані можна знайти в [репозиторії covid19\_ua](https://github.com/VasiaPiven/covid19_ua).
+
+Підготовка даних
+----------------
+
+Побудуємо графіки поширення коронавірусної інфекції COVID-19 (спричиненої вірусом SARS-CoV-2) по областях. Для цього скористаємось бібліотеками функцій `ggplot2` для створення графіків та `tidyverse` для підготовки даних.
 
 ``` r
 library(ggplot2)
@@ -16,14 +25,51 @@ library(tidyverse)
 Sys.setlocale(category="LC_ALL",locale="uk_UA.utf8" )
 ```
 
-    ## [1] "LC_CTYPE=uk_UA.utf8;LC_NUMERIC=C;LC_TIME=uk_UA.utf8;LC_COLLATE=uk_UA.utf8;LC_MONETARY=uk_UA.utf8;LC_MESSAGES=en_US.UTF-8;LC_PAPER=en_US.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_US.UTF-8;LC_IDENTIFICATION=C"
-
-Тепер вже можна починати роботу. Зчитаємо дані спочатку в таблицю, а потім перетворимо її на фрейм даних для подальшої обробки.
+Тепер вже можна починати роботу. Зчитаємо із використанням функції [`read_csv`](https://readr.tidyverse.org/reference/read_delim.html) бібліотеки `tidyverse` а не стандартної `read.csv`. Таким чином отримаємо дані одразу в структурі даних, зручній для подальшої роботи.
 
 ``` r
-area_dyn_csv <- read.csv('../covid19_by_area_type_hosp_dynamics.csv')
-area_dyn <- as.data.frame(area_dyn_csv)
+area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
 ```
+
+    ## Parsed with column specification:
+    ## cols(
+    ##   zvit_date = col_date(format = ""),
+    ##   registration_area = col_character(),
+    ##   priority_hosp_area = col_character(),
+    ##   edrpou_hosp = col_character(),
+    ##   legal_entity_name_hosp = col_character(),
+    ##   legal_entity_lat = col_number(),
+    ##   legal_entity_lng = col_number(),
+    ##   person_gender = col_character(),
+    ##   person_age_group = col_character(),
+    ##   add_conditions = col_character(),
+    ##   is_medical_worker = col_character(),
+    ##   new_susp = col_double(),
+    ##   new_confirm = col_double(),
+    ##   active_confirm = col_double(),
+    ##   new_death = col_double(),
+    ##   new_recover = col_double()
+    ## )
+
+Функція `read_csv`, окрім власне зчитування самої таблиці, іще й намагається правильно визначити типи даних, що зберігаються в кожному зі ствопчиків. І хоча розробники радять вказувати типи даних для кожного стовпчика явним чином, в нашому випадку це може бути зайвим, адже функція вірно визначає всі типи даних, навіть [`Date`](https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/Dates) для стовпчика `zvit_date`.
+
+``` r
+head(area_dyn)
+```
+
+    ## # A tibble: 6 x 16
+    ##   zvit_date  registration_ar… priority_hosp_a… edrpou_hosp legal_entity_na…
+    ##   <date>     <chr>            <chr>            <chr>       <chr>           
+    ## 1 2020-05-14 Вінницька        Вінницька        01982494    КНП БЕРШАДСЬКА …
+    ## 2 2020-05-14 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
+    ## 3 2020-05-14 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
+    ## 4 2020-05-14 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
+    ## 5 2020-05-14 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
+    ## 6 2020-05-14 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
+    ## # … with 11 more variables: legal_entity_lat <dbl>, legal_entity_lng <dbl>,
+    ## #   person_gender <chr>, person_age_group <chr>, add_conditions <chr>,
+    ## #   is_medical_worker <chr>, new_susp <dbl>, new_confirm <dbl>,
+    ## #   active_confirm <dbl>, new_death <dbl>, new_recover <dbl>
 
 Таблиця в файлі `covid19_by_area_type_hosp_dynamics.csv` має доволі велику кількість стовпчиків, перелічемо їх для зручності подальшого використання в скрипті:
 
@@ -48,23 +94,88 @@ daily_area_reg_dyn <- area_dyn %>%
               new_death = sum(new_death))
 ```
 
-Поки що дані про дати були представлені в форматі звичайних текстових рядків. Аби система могла нормально працювати з ними, їх слід перетворити у внутрішнє представлення. [Основними](https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/DateTimeClasses) класами для представлення часу та дат в R є `POSIXct` та `POSIXlt`. Однак, для зручнішої роботи з датами (календарними днями) є клас [`Date`](https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/Dates). Його внутрішнє представлення --- ціле число, що дорівнює кількості днів, що минули від першого січня 1970 року до вказаної дати.
+Нарешті, все готово для створення графіка.
 
-Аби перетворити рядок з текстом дати на об'єкт класу `Date` служить функція [`as.Date`](https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/as.Date). Передамо як аргументи власне рядок з датою, та рядок, що описує формат, в якому цю дату записано:
+Підозри на захворювання COVID-19
+--------------------------------
+
+Слід зазначити, що інформація в розрізі днів агрегована безпосередньо за датою реєстрації підозр, даті тестування/одужання/смерті та не залежить від дати, коли ці дані було оприлюднено.
+
+Далі буде три однотипних графіка, тому детально розгляньмо будову лише першого: динаміка нових підозр на захворювання на COVID-19.
+
+Оскільки графік має єдине джерело даних та однакові параметри вісей, це можна вказати одразу в [конструкторі об'єкта ggplot](https://ggplot2.tidyverse.org/reference/ggplot.html):
 
 ``` r
-daily_area_reg_dyn <- mutate(daily_area_reg_dyn, Cdate = as.Date(zvit_date, "%Y-%m-%d"))
+plot_susp <- ggplot(daily_area_reg_dyn, aes(x=zvit_date, y=new_susp))
 ```
 
-Нарешті, побудуємо графік.
+Далі до графіка слід додати визначення графічних об'єктів, що будуть на ньому зображено:
 
 ``` r
-(ggplot(daily_area_reg_dyn, aes(x=Cdate, y=new_susp))
+plot_susp <- plot_susp + geom_line()
+```
+
+Оскільки ми прагнемо створити окремий графік для кожної окремої області та міста Києва (стовпчик `registration_area`), слід додати відповідну інструкцію до графіка: `facet_wrap` робить саме це, тут слід вказати стовпчик, в якому знаходиться критерій для поділу, та кількість рядків або стовпчиків, у яких буде розташовано графіки.
+
+``` r
+plot_susp <- plot_susp + facet_wrap(vars(registration_area), ncol = 4)
+```
+
+GGplot2 має зручний механізм налаштування декорацій, який дає можливість як детальних підлаштувань під конкретні потреби, так і набори вже наперед заданих параметрів, так званих "тем". Оберемо "легку" тему:
+
+``` r
+plot_susp <- plot_susp + theme_light()
+```
+
+Ну і нарешті визначимо такі атрибути графіка, як його назву, підпис, назви вісей, тощо:
+
+``` r
+plot_susp <- plot_susp + labs(title="Підозри на захворювання COVID-19",
+           x = "Дата",
+           y = "Підозр на день",
+           caption = "Дані: ЦГЗ та НСЗУ")
+
+plot_susp
+```
+
+<img src="fig_regions_dyn/daily_area_regions_dyn_susp-1.png" width="672" />
+
+Результат.
+
+Підтверджені випадки захворювання на COVID-19
+---------------------------------------------
+
+Динаміка лабораторно підтверджених випадків захворювань на COVID-19.
+
+``` r
+(ggplot(daily_area_reg_dyn, aes(x=zvit_date, y=new_confirm))
     + geom_line()
     + facet_wrap(vars(registration_area), ncol = 4)
-    + theme_light())
+    + theme_light()
+    + labs(title="Підтверджені випадки захворювання на COVID-19",
+           x = "Дата",
+           y = "Випадків на день",
+           caption = "Дані: ЦГЗ та НСЗУ"))
 ```
 
-<img src="figures/daily_area_regions_dyn_susp-1.png" width="672" />
+<img src="fig_regions_dyn/daily_area_regions_dyn_confirm-1.png" width="672" />
+
+Смерті від захворювання на COVID-19
+-----------------------------------
+
+Динаміка летальних випадків у пацієнтів, хворих на COVID-19.
+
+``` r
+(ggplot(daily_area_reg_dyn, aes(x=zvit_date, y=new_death))
+    + geom_line()
+    + facet_wrap(vars(registration_area), ncol = 4)
+    + theme_light()
+    + labs(title="Смерті від захворювання на COVID-19",
+           x = "Дата",
+           y = "Померло за день",
+           caption = "Дані: ЦГЗ та НСЗУ"))
+```
+
+<img src="fig_regions_dyn/daily_area_regions_dyn_death-1.png" width="672" />
 
 [Повернутись на головну](index.html)

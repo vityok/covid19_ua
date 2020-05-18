@@ -3,5 +3,5 @@
 Rscript render.R
 
 cp *.md ../docs
-cp -ra figures ../docs
+cp -ra fig_regions_dyn ../docs
 
