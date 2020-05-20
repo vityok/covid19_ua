@@ -1,6 +1,8 @@
 Побудова прогнозів із використанням Facebook Prophet
 ================
 
+Це лише заготовка, сторінка роботі.
+
 ``` r
 library(tidyverse)
 library(prophet)
@@ -111,12 +113,12 @@ tail(forecast[c('ds', 'yhat', 'yhat_lower', 'yhat_upper')])
 ```
 
     ##            ds     yhat yhat_lower yhat_upper
-    ## 56 2020-05-27 628.8589   509.6384   745.7887
-    ## 57 2020-05-28 587.3159   470.5163   705.9726
-    ## 58 2020-05-29 607.4295   494.4307   731.6226
-    ## 59 2020-05-30 582.4020   460.7984   695.6174
-    ## 60 2020-05-31 451.2336   334.2068   572.9640
-    ## 61 2020-06-01 499.7790   385.4080   621.1682
+    ## 56 2020-05-27 628.8589   514.1139   747.4982
+    ## 57 2020-05-28 587.3159   468.1053   716.5051
+    ## 58 2020-05-29 607.4295   490.3078   717.9183
+    ## 59 2020-05-30 582.4020   463.0674   701.6390
+    ## 60 2020-05-31 451.2336   335.2537   565.3087
+    ## 61 2020-06-01 499.7790   390.4262   630.0439
 
 You can use the generic plot function to plot the forecast, by passing in the model and the forecast dataframe.
 
@@ -135,3 +137,5 @@ prophet_plot_components(m, forecast)
 <img src="fig_forecast_prophet/unnamed-chunk-8-1.png" width="672" />
 
 More details about the options available for each method are available in the docstrings, for example, via `?prophet` or `?fit.prophet`. This documentation is also available in the [reference manual](https://cran.r-project.org/web/packages/prophet/prophet.pdf) on CRAN.
+
+[Повернутись на головну](index.html) або [повідомити про помилку]((https://github.com/vityok/covid19_ua/issues))

@@ -2,6 +2,8 @@
 title: "Побудова прогнозів стандартною функцією ARIMA"
 ---
 
+Це лише заготовка, сторінка роботі.
+
 ```{r, echo = FALSE, results = 'hide'}
 knitr::opts_chunk$set(fig.retina=2, fig.path = "fig_forecast_arima/")
 Sys.setlocale(category="LC_ALL",locale="uk_UA.utf8" )
@@ -48,3 +50,6 @@ predict <- predict(fit.new_confirm, 7)
 
 #plot(predict)
 ```
+
+[Повернутись на головну](index.html) або [повідомити про
+помилку]((https://github.com/vityok/covid19_ua/issues))

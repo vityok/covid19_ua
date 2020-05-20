@@ -2,6 +2,8 @@
 title: "Побудова прогнозів із використанням Tidyverts Fable"
 ---
 
+Це лише заготовка, сторінка роботі.
+
 ```{r, echo = FALSE, results = 'hide'}
 knitr::opts_chunk$set(fig.retina=2, fig.path = "fig_forecast_fable/")
 Sys.setlocale(category="LC_ALL",locale="uk_UA.utf8" )
@@ -48,3 +50,6 @@ ap <- tle.dyn %>%
     + theme_light()
     + theme(legend.position = "bottom"))
 ```
+
+[Повернутись на головну](index.html) або [повідомити про
+помилку]((https://github.com/vityok/covid19_ua/issues))

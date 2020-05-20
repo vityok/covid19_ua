@@ -1,6 +1,8 @@
 Побудова прогнозів із використанням Tidyverts Fable
 ================
 
+Це лише заготовка, сторінка роботі.
+
 Завантаження бібліотек
 
 ``` r
@@ -81,3 +83,5 @@ ap <- tle.dyn %>%
 ```
 
 <img src="fig_forecast_fable/autoplot-1.png" width="672" />
+
+[Повернутись на головну](index.html) або [повідомити про помилку]((https://github.com/vityok/covid19_ua/issues))

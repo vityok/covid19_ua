@@ -2,6 +2,8 @@
 title: "Побудова прогнозів із використанням Facebook Prophet"
 ---
 
+Це лише заготовка, сторінка роботі.
+
 ```{r, echo = FALSE, results = 'hide'}
 knitr::opts_chunk$set(fig.retina=2, fig.path = "fig_forecast_prophet/")
 Sys.setlocale(category="LC_ALL",locale="uk_UA.utf8" )
@@ -89,3 +91,6 @@ in the docstrings, for example, via `?prophet` or `?fit.prophet`. This
 documentation is also available in the [reference
 manual](https://cran.r-project.org/web/packages/prophet/prophet.pdf)
 on CRAN.
+
+[Повернутись на головну](index.html) або [повідомити про
+помилку]((https://github.com/vityok/covid19_ua/issues))
