@@ -88,10 +88,9 @@ zvit\_date, registration\_area, priority\_hosp\_area, edrpou\_hosp, legal\_entit
 ``` r
 daily_area_reg_dyn <- area_dyn %>%
     select(zvit_date, registration_area, new_susp, new_confirm, new_death) %>%
-    mutate(registration_area=stringr::str_to_title(registration_area)) %>%
     mutate(registration_area=factor(case_when(
-               registration_area == "М. Київ" ~ "м. Київ",
-               TRUE ~ registration_area))) %>%
+               registration_area == "м. Київ" ~ "м. Київ",
+               TRUE ~ stringr::str_to_title(registration_area)))) %>%
     group_by(zvit_date, registration_area) %>%
     summarise(new_susp = sum(new_susp),
               new_confirm = sum(new_confirm),
@@ -205,10 +204,9 @@ plot_susp
 ``` r
 area_first <- area_dyn %>%
     select(zvit_date, registration_area, new_confirm) %>%
-    mutate(registration_area=stringr::str_to_title(registration_area)) %>%
     mutate(registration_area=factor(case_when(
-               registration_area == "М. Київ" ~ "м. Київ",
-               TRUE ~ registration_area))) %>%
+               registration_area == "м. Київ" ~ "м. Київ",
+               TRUE ~ stringr::str_to_title(registration_area)))) %>%
     group_by(registration_area) %>%
     summarise(zvit_date=min(zvit_date),
               new_confirm=sum(new_confirm))
