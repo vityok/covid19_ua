@@ -90,6 +90,10 @@ new_susp, new_confirm, active_confirm, new_death, new_recover.
 ```{r}
 daily_area_reg_dyn <- area_dyn %>%
     select(zvit_date, registration_area, new_susp, new_confirm, new_death) %>%
+    mutate(registration_area=stringr::str_to_title(registration_area)) %>%
+    mutate(registration_area=factor(case_when(
+               registration_area == "М. Київ" ~ "м. Київ",
+               TRUE ~ registration_area))) %>%
     group_by(zvit_date, registration_area) %>%
     summarise(new_susp = sum(new_susp),
               new_confirm = sum(new_confirm),
@@ -206,30 +210,40 @@ plot_susp
 
 ```{r}
 area_first <- area_dyn %>%
-    select(zvit_date, registration_area) %>%
+    select(zvit_date, registration_area, new_confirm) %>%
+    mutate(registration_area=stringr::str_to_title(registration_area)) %>%
+    mutate(registration_area=factor(case_when(
+               registration_area == "М. Київ" ~ "м. Київ",
+               TRUE ~ registration_area))) %>%
     group_by(registration_area) %>%
-    summarise(zvit_date=min(zvit_date))
+    summarise(zvit_date=min(zvit_date),
+              new_confirm=sum(new_confirm))
 
 latest <- max(area_first$zvit_date)
 ```
 
-Створити так званий &laquo;lolipop&raquo; графік:
+Крапками позначимо перший лабораторно підтверджений випадок
+захворювання, але скористаємось функцією `fct_reorder` для
+розташування областей в хронологічній послідовності:
 
 ```{r daily_area_regions_first_zvit, fig.height=8.5}
-(ggplot(area_first, aes(x=registration_area, y=zvit_date))
-    + geom_segment(aes(x=registration_area,
-                       xend=registration_area,
-                       y=latest, yend=zvit_date),
-                   color="grey")
-    + geom_point(color="orange", size=4)
+(ggplot(area_first,
+        aes(fct_reorder(registration_area,desc(zvit_date)),
+            zvit_date,
+            size=new_confirm))
+    + geom_point(color="orange")
+    + scale_size_continuous(name = "Всього випадків")
     + coord_flip()
     + theme_light()
     + theme(
           panel.grid.major.x = element_blank(),
           panel.border = element_blank(),
-          axis.ticks.x = element_blank())
-    + xlab("")
-    + ylab("Дата першого звіту"))
+          axis.ticks.x = element_blank(),
+          legend.position = "bottom")
+    + labs(title="Дата першого звіту",
+           subtitle="Розмір кола залежить від сумарної кількості випадків",
+           x="",
+           y=""))
 ```
 
 [Повернутись на головну](index.html) або [повідомити про

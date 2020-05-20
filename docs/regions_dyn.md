@@ -60,12 +60,12 @@ head(area_dyn)
     ## # A tibble: 6 x 16
     ##   zvit_date  registration_ar… priority_hosp_a… edrpou_hosp legal_entity_na…
     ##   <date>     <chr>            <chr>            <chr>       <chr>           
-    ## 1 2020-05-14 Вінницька        Вінницька        01982494    КНП БЕРШАДСЬКА …
-    ## 2 2020-05-14 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
-    ## 3 2020-05-14 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
-    ## 4 2020-05-14 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
-    ## 5 2020-05-14 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
-    ## 6 2020-05-14 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
+    ## 1 2020-05-18 Вінницька        Вінницька        01982494    КНП БЕРШАДСЬКА …
+    ## 2 2020-05-18 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
+    ## 3 2020-05-18 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
+    ## 4 2020-05-18 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
+    ## 5 2020-05-18 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
+    ## 6 2020-05-18 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
     ## # … with 11 more variables: legal_entity_lat <dbl>, legal_entity_lng <dbl>,
     ## #   person_gender <chr>, person_age_group <chr>, add_conditions <chr>,
     ## #   is_medical_worker <chr>, new_susp <dbl>, new_confirm <dbl>,
@@ -88,6 +88,10 @@ zvit\_date, registration\_area, priority\_hosp\_area, edrpou\_hosp, legal\_entit
 ``` r
 daily_area_reg_dyn <- area_dyn %>%
     select(zvit_date, registration_area, new_susp, new_confirm, new_death) %>%
+    mutate(registration_area=stringr::str_to_title(registration_area)) %>%
+    mutate(registration_area=factor(case_when(
+               registration_area == "М. Київ" ~ "м. Київ",
+               TRUE ~ registration_area))) %>%
     group_by(zvit_date, registration_area) %>%
     summarise(new_susp = sum(new_susp),
               new_confirm = sum(new_confirm),
@@ -200,30 +204,38 @@ plot_susp
 
 ``` r
 area_first <- area_dyn %>%
-    select(zvit_date, registration_area) %>%
+    select(zvit_date, registration_area, new_confirm) %>%
+    mutate(registration_area=stringr::str_to_title(registration_area)) %>%
+    mutate(registration_area=factor(case_when(
+               registration_area == "М. Київ" ~ "м. Київ",
+               TRUE ~ registration_area))) %>%
     group_by(registration_area) %>%
-    summarise(zvit_date=min(zvit_date))
+    summarise(zvit_date=min(zvit_date),
+              new_confirm=sum(new_confirm))
 
 latest <- max(area_first$zvit_date)
 ```
 
-Створити так званий «lolipop» графік:
+Крапками позначимо перший лабораторно підтверджений випадок захворювання, але скористаємось функцією `fct_reorder` для розташування областей в хронологічній послідовності:
 
 ``` r
-(ggplot(area_first, aes(x=registration_area, y=zvit_date))
-    + geom_segment(aes(x=registration_area,
-                       xend=registration_area,
-                       y=latest, yend=zvit_date),
-                   color="grey")
-    + geom_point(color="orange", size=4)
+(ggplot(area_first,
+        aes(fct_reorder(registration_area,desc(zvit_date)),
+            zvit_date,
+            size=new_confirm))
+    + geom_point(color="orange")
+    + scale_size_continuous(name = "Всього випадків")
     + coord_flip()
     + theme_light()
     + theme(
           panel.grid.major.x = element_blank(),
           panel.border = element_blank(),
-          axis.ticks.x = element_blank())
-    + xlab("")
-    + ylab("Дата першого звіту"))
+          axis.ticks.x = element_blank(),
+          legend.position = "bottom")
+    + labs(title="Дата першого звіту",
+           subtitle="Розмір кола залежить від сумарної кількості випадків",
+           x="",
+           y=""))
 ```
 
 <img src="fig_regions_dyn/daily_area_regions_first_zvit-1.png" width="672" />
