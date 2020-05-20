@@ -1,0 +1,50 @@
+---
+title: "Побудова прогнозів стандартною функцією ARIMA"
+---
+
+```{r, echo = FALSE, results = 'hide'}
+knitr::opts_chunk$set(fig.retina=2, fig.path = "fig_forecast_arima/")
+Sys.setlocale(category="LC_ALL",locale="uk_UA.utf8" )
+```
+
+Завантаження бібліотек
+
+```{r}
+library(tidyverse)
+```
+
+https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/arima
+
+Створення об'єктів типу "часовий ряд" на основі фреймів даних. Частота
+7 рекомендована для щоденних вимирів та тижневій "природній"
+періодичності.
+
+```{r}
+area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
+
+daily_area_dyn <- area_dyn %>%
+    select(zvit_date, new_susp, new_confirm, new_death) %>%
+    group_by(zvit_date) %>%
+    summarise(new_susp = sum(new_susp),
+              new_confirm = sum(new_confirm),
+              new_death = sum(new_death)) %>%
+    filter(zvit_date > as.Date("2020-04-01"))
+
+ts.new_confirm <- ts(daily_area_dyn$new_confirm, frequency=7)
+ts.new_susp    <- ts(daily_area_dyn$new_susp, frequency=7)
+
+plot(ts.new_confirm)
+```
+
+*order*: A specification of the non-seasonal part of the ARIMA model:
+the three integer components $$(p,d,q)$$ are the AR order, the degree of
+differencing, and the MA order.
+
+```{r}
+fit.new_confirm <- arima(ts.new_confirm, order=c(3,0,0))
+tsdiag(fit.new_confirm)
+
+predict <- predict(fit.new_confirm, 7)
+
+#plot(predict)
+```

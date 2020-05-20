@@ -7,3 +7,16 @@ render('regions_dyn.Rmd',
 
 render('histograms.Rmd',
        output_format = github_document())
+
+
+render('forecast.Rmd',
+       output_format = github_document())
+
+render('forecast_arima.Rmd',
+       output_format = github_document())
+
+render('forecast_fable.Rmd',
+       output_format = github_document())
+
+render('forecast_prophet.Rmd',
+       output_format = github_document())

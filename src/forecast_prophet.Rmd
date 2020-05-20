@@ -1,0 +1,91 @@
+---
+title: "Побудова прогнозів із використанням Facebook Prophet"
+---
+
+```{r, echo = FALSE, results = 'hide'}
+knitr::opts_chunk$set(fig.retina=2, fig.path = "fig_forecast_prophet/")
+Sys.setlocale(category="LC_ALL",locale="uk_UA.utf8" )
+```
+
+
+```{r}
+library(tidyverse)
+library(prophet)
+
+
+```
+
+# Prophet
+
+https://facebook.github.io/prophet/docs/quick_start.html#r-api
+
+First we read in the data and create the outcome variable. As in the
+Python API, this is a dataframe with columns ds and y, containing the
+date and numeric value respectively. The ds column should be
+YYYY-MM-DD for a date, or YYYY-MM-DD HH:MM:SS for a timestamp. As
+above, we use here the log number of views to Peyton Manning’s
+Wikipedia page, available here.
+
+```{r}
+df <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
+df <- df %>%
+    select(zvit_date, new_confirm) %>%
+    group_by(zvit_date) %>%
+    summarise(new_confirm = sum(new_confirm)) %>%
+    filter(zvit_date > as.Date("2020-04-01"))
+
+df <- df %>% rename(ds = zvit_date, y = new_confirm)
+
+head(df)
+plot(df)
+```
+
+We call the prophet function to fit the model. The first argument is
+the historical dataframe. Additional arguments control how Prophet
+fits the data and are described in later pages of this documentation.
+
+```{r}
+m <- prophet(df)
+```
+
+Predictions are made on a dataframe with a column ds containing the
+dates for which predictions are to be made. The make_future_dataframe
+function takes the model object and a number of periods to forecast
+and produces a suitable dataframe. By default it will also include the
+historical dates so we can evaluate in-sample fit.
+
+
+```{r}
+future <- make_future_dataframe(m, periods = 14)
+tail(future)
+```
+
+As with most modeling procedures in R, we use the generic predict
+function to get our forecast. The forecast object is a dataframe with
+a column yhat containing the forecast. It has additional columns for
+uncertainty intervals and seasonal components.
+
+```{r}
+forecast <- predict(m, future)
+tail(forecast[c('ds', 'yhat', 'yhat_lower', 'yhat_upper')])
+```
+
+You can use the generic plot function to plot the forecast, by passing
+in the model and the forecast dataframe.
+
+```{r}
+plot(m, forecast)
+```
+
+You can use the prophet_plot_components function to see the forecast
+broken down into trend, weekly seasonality, and yearly seasonality.
+
+```{r}
+prophet_plot_components(m, forecast)
+```
+
+More details about the options available for each method are available
+in the docstrings, for example, via `?prophet` or `?fit.prophet`. This
+documentation is also available in the [reference
+manual](https://cran.r-project.org/web/packages/prophet/prophet.pdf)
+on CRAN.

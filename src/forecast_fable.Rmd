@@ -1,0 +1,50 @@
+---
+title: "Побудова прогнозів із використанням Tidyverts Fable"
+---
+
+```{r, echo = FALSE, results = 'hide'}
+knitr::opts_chunk$set(fig.retina=2, fig.path = "fig_forecast_fable/")
+Sys.setlocale(category="LC_ALL",locale="uk_UA.utf8" )
+```
+
+Завантаження бібліотек
+
+```{r}
+library(tidyverse)
+library(fable)
+library(tsibble)
+library(feasts)
+```
+
+https://fable.tidyverts.org/
+
+```{r}
+area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
+
+daily_area_dyn <- area_dyn %>%
+    select(zvit_date, new_susp, new_confirm, new_death) %>%
+    group_by(zvit_date) %>%
+    summarise(new_susp = sum(new_susp),
+              new_confirm = sum(new_confirm),
+              new_death = sum(new_death)) %>%
+    filter(zvit_date > as.Date("2020-04-01"))
+
+tle.dyn <- daily_area_dyn %>%
+    as_tsibble(index=zvit_date)
+```
+
+Модель та графік
+
+```{r autoplot, fig.width=7, fig.height=6}
+ap <- tle.dyn %>%
+    model(
+        ets = ETS(box_cox(new_confirm, 0.3)),
+        arima = ARIMA(new_confirm),
+        snaive = SNAIVE(new_confirm)) %>%
+    forecast(h = "2 weeks") %>%
+    autoplot(tle.dyn, level = NULL)
+
+(ap
+    + theme_light()
+    + theme(legend.position = "bottom"))
+```
