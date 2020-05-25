@@ -39,8 +39,8 @@ df <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
     ##   priority_hosp_area = col_character(),
     ##   edrpou_hosp = col_character(),
     ##   legal_entity_name_hosp = col_character(),
-    ##   legal_entity_lat = col_number(),
-    ##   legal_entity_lng = col_number(),
+    ##   legal_entity_lat = col_double(),
+    ##   legal_entity_lng = col_double(),
     ##   person_gender = col_character(),
     ##   person_age_group = col_character(),
     ##   add_conditions = col_character(),
@@ -51,6 +51,16 @@ df <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
     ##   new_death = col_double(),
     ##   new_recover = col_double()
     ## )
+
+    ## Warning: 82 parsing failures.
+    ##  row              col               expected  actual                                        file
+    ## 1381 legal_entity_lat no trailing characters ,604941 '../covid19_by_area_type_hosp_dynamics.csv'
+    ## 1381 legal_entity_lng no trailing characters ,271351 '../covid19_by_area_type_hosp_dynamics.csv'
+    ## 3272 legal_entity_lat no trailing characters ,604941 '../covid19_by_area_type_hosp_dynamics.csv'
+    ## 3272 legal_entity_lng no trailing characters ,271351 '../covid19_by_area_type_hosp_dynamics.csv'
+    ## 5227 legal_entity_lat no trailing characters ,604941 '../covid19_by_area_type_hosp_dynamics.csv'
+    ## .... ................ ...................... ....... ...........................................
+    ## See problems(...) for more details.
 
 ``` r
 df <- df %>%
@@ -71,8 +81,8 @@ head(df)
     ## 2 2020-04-03   149
     ## 3 2020-04-04   167
     ## 4 2020-04-05   102
-    ## 5 2020-04-06   185
-    ## 6 2020-04-07   158
+    ## 5 2020-04-06   189
+    ## 6 2020-04-07   159
 
 ``` r
 plot(df)
@@ -98,12 +108,12 @@ tail(future)
 ```
 
     ##            ds
-    ## 56 2020-05-27
-    ## 57 2020-05-28
-    ## 58 2020-05-29
-    ## 59 2020-05-30
-    ## 60 2020-05-31
-    ## 61 2020-06-01
+    ## 62 2020-06-02
+    ## 63 2020-06-03
+    ## 64 2020-06-04
+    ## 65 2020-06-05
+    ## 66 2020-06-06
+    ## 67 2020-06-07
 
 As with most modeling procedures in R, we use the generic predict function to get our forecast. The forecast object is a dataframe with a column yhat containing the forecast. It has additional columns for uncertainty intervals and seasonal components.
 
@@ -113,12 +123,12 @@ tail(forecast[c('ds', 'yhat', 'yhat_lower', 'yhat_upper')])
 ```
 
     ##            ds     yhat yhat_lower yhat_upper
-    ## 56 2020-05-27 628.8589   514.1139   747.4982
-    ## 57 2020-05-28 587.3159   468.1053   716.5051
-    ## 58 2020-05-29 607.4295   490.3078   717.9183
-    ## 59 2020-05-30 582.4020   463.0674   701.6390
-    ## 60 2020-05-31 451.2336   335.2537   565.3087
-    ## 61 2020-06-01 499.7790   390.4262   630.0439
+    ## 62 2020-06-02 519.6943   391.0029   647.2796
+    ## 63 2020-06-03 586.2447   459.6499   718.2326
+    ## 64 2020-06-04 537.1718   414.9003   654.9671
+    ## 65 2020-06-05 560.1487   441.4266   676.8701
+    ## 66 2020-06-06 520.7512   409.3582   634.7605
+    ## 67 2020-06-07 393.3554   274.9416   519.8033
 
 You can use the generic plot function to plot the forecast, by passing in the model and the forecast dataframe.
 

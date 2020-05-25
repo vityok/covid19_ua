@@ -89,10 +89,10 @@ new_susp, new_confirm, active_confirm, new_death, new_recover.
 
 ```{r}
 daily_area_reg_dyn <- area_dyn %>%
-    select(zvit_date, registration_area, new_susp, new_confirm, new_death) %>%
+    select(zvit_date, priority_hosp_area, new_susp, new_confirm, new_death) %>%
     mutate(registration_area=factor(case_when(
-               registration_area == "м. Київ" ~ "м. Київ",
-               TRUE ~ stringr::str_to_title(registration_area)))) %>%
+               priority_hosp_area == "м. Київ" ~ "м. Київ",
+               TRUE ~ stringr::str_to_title(priority_hosp_area)))) %>%
     group_by(zvit_date, registration_area) %>%
     summarise(new_susp = sum(new_susp),
               new_confirm = sum(new_confirm),

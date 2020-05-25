@@ -1,0 +1,253 @@
+---
+title: "Як зчитувати та обробляти дані, оприлюднені інститутом Джонса Хопкінза"
+---
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(fig.retina=2, fig.path = "fig_reading_csse_ts/")
+```
+
+(в роботі): Як зчитувати та обробляти в R дані, оприлюднені інститутом
+Джонса Хопкінза: `csse_covid_19_data`
+
+```{r}
+library(tidyverse)
+```
+
+# Часові ряди CSSE
+
+Часові ряди зібрані центром CSSE інституту Jhons Hopkins знаходяться у
+вільному доступі в репозиторії на GitHub:
+[`csse_covid_19_time_series`](https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series). Нас
+цікавитимуть три часових ряда, які містять сумарні показники на певну дату:
+
+ - `time_series_covid19_confirmed_global.csv`: кількість підтверджених випадків захворювання на коронавірус,
+ - `time_series_covid19_deaths_global.csv`: кількість померлих,
+ - `time_series_covid19_recovered_global.csv`: скільки одужало.
+
+Всі три файла мають подібну структуру, особливістю якої є те, що для
+окремих країн показники розбито за регіонами, а дата, коли показник
+зареєстровано, вказана в назві стовпчика.
+
+Така структура даних не дуже добре підходить для зручної обробки в
+пакеті `tidyverse` системи R. [Бажано,
+аби](https://r4ds.had.co.nz/tidy-data.html#tidy-data-1):
+
+1. Кожна змінна мала власний стовпчик.
+2. Кожне вимірювання &mdash; власний рядок.
+3. Кожне значення &mdash; власну комірку.
+
+Тобто, бажано отримати дані, представлені як таблиця зі стовпчиками:
+
+- Країна,
+- Дата,
+- Кількість випадків,
+- -//- померлих,
+- -//- одужало.
+
+Хоча "Дата" може бути зайвою для певних варіантів використання даних.
+
+```{r}
+deaths_global_csv <- read_csv('../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv')
+
+deaths_global <- deaths_global_csv %>%
+    pivot_longer(cols=contains("/20"), names_to="Date", values_to="Deaths") %>%
+    mutate(Date=as.Date(Date,format='%m/%d/%Y'))
+
+deaths_global_sum <- deaths_global %>%
+    select(Country = `Country/Region`, Deaths, Date) %>%
+    group_by(Country) %>%
+    filter(Date == max(Date)) %>%
+    summarise(Deaths = sum(Deaths))
+```
+
+```{r}
+confirmed_global_csv <- read_csv('../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv')
+
+confirmed_global <- confirmed_global_csv %>%
+    pivot_longer(cols=contains("/20"), names_to="Date", values_to="Confirmed") %>%
+    mutate(Date=as.Date(Date,format='%m/%d/%Y'))
+
+confirmed_global_sum <- confirmed_global %>%
+    select(Country = `Country/Region`, Confirmed, Date) %>%
+    group_by(Country) %>%
+    filter(Date == max(Date)) %>%
+    summarise(Confirmed = sum(Confirmed))
+
+head(confirmed_global_sum)
+length(confirmed_global_sum$Confirmed)
+```
+
+```{r}
+recovered_global_csv <- read_csv('../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv')
+
+recovered_global <- recovered_global_csv %>%
+    pivot_longer(cols=contains("/20"), names_to="Date", values_to="Recovered") %>%
+    mutate(Date=as.Date(Date,format='%m/%d/%Y'))
+
+recovered_global_sum <- recovered_global %>%
+    select(Country = `Country/Region`, Recovered, Date) %>%
+    group_by(Country) %>%
+    filter(Date == max(Date)) %>%
+    summarise(Recovered = sum(Recovered))
+```
+
+Об'єднаємо три набори даних в один:
+
+```{r}
+all_sum_raw <- deaths_global_sum %>%
+    full_join(confirmed_global_sum, by='Country') %>%
+    full_join(recovered_global_sum, by='Country')
+
+
+head(all_sum_raw)
+
+length(all_sum_raw$Country)
+
+summary(all_sum_raw)
+```
+
+Обчислимо співвідношення:
+
+```{r}
+all_stat <- all_sum_raw %>%
+    mutate(Deaths_To_Recovered = if_else(Recovered > 0,
+                                         Deaths / Recovered,
+                                         0),
+           Deaths_To_Confirmed = if_else(Confirmed > 0,
+                                         Deaths / Confirmed,
+                                         0),
+           Recovered_To_Confirmed = Recovered / Confirmed,
+           Recovered_To_Deaths = if_else(Deaths > 0,
+                                         Recovered / Deaths,
+                                         0),
+           Active_To_Confirmed = (
+               (Confirmed - Deaths - Recovered)
+               / Confirmed),
+           Country = factor(Country))
+
+head(all_stat)
+```
+
+```{r}
+ua <- all_stat[all_stat$Country == 'Ukraine',]
+be <- all_stat[all_stat$Country == 'Belarus',]
+
+ua
+
+ua$Deaths_To_Recovered
+
+summary(all_stat$Deaths_To_Recovered)
+
+summary(all_stat$Active_To_Confirmed)
+
+all_stat[all_stat$Recovered_To_Deaths > be$Recovered_To_Deaths,]
+```
+
+Скільки одужало на одного померлого (чим більше, тим краще):
+
+```{r}
+summary(all_stat$Recovered_To_Deaths)
+
+ua$Recovered_To_Deaths
+```
+
+```{r}
+breaks_country <- c("Ukraine", "Belarus", "Poland", "Germany", "France",
+                    "US", "Korea, South", "Russia", "United Kingdom",
+                    "Austria", "Canada", "China", "Italy", "Spain")
+
+labels_country <- c("Україна", "Білорусь", "Польща", "Німеччина", "Франція",
+                    "США", "Корея", "Росія", "Велика Британія",
+                    "Австрія", "Канада", "КНР", "Італія", "Іспанія")
+```
+
+&laquo;Рейтинг&raquo;
+
+```{r recovered_to_deaths, fig.height=9}
+(ggplot(all_stat,
+        aes(fct_reorder(Country, desc(Recovered_To_Deaths)),
+            Recovered_To_Deaths))
+    + geom_point(size=1)
+    + scale_x_discrete(breaks=breaks_country, labels=labels_country)
+    + ylim(c(0,100))
+    + coord_flip()
+    + theme_light()
+    + theme(
+          panel.grid.major.x = element_blank(),
+          panel.border = element_blank(),
+          axis.ticks.x = element_blank(),
+          axis.ticks.y = element_blank())
+    + labs(title="Скільки одужало на одного померлого",
+           subtitle="Дані CSSE Jhons Hopkins",
+           caption="Чим більше число, тим краще",
+           x="",
+           y="")
+)
+```
+
+
+```{r}
+all_stat[all_stat$Deaths_To_Recovered > 1,]
+
+all_stat[all_stat$Deaths_To_Recovered > 33,]
+
+all_stat[all_stat$Deaths_To_Recovered < ua$Deaths_To_Recovered,]
+```
+
+Побудуємо гістограму співвідношень кількості загиблих до тих, хто
+одужав (чим менше значення, тим краще):
+
+```{r}
+ggplot(all_stat, aes(Deaths_To_Recovered)) +
+    geom_histogram(bins=90) +
+    xlim(c(0,1))
+```
+
+Поточна летальність, або співвідношення кількості летальних випадків
+до кількості зареєстрованих (чим менше значення, тим краще):
+
+Поточна летальність для України становить:
+```{r}
+ua$Deaths_To_Confirmed
+```
+
+Статистичні моменти для всіх країн:
+
+```{r}
+summary(all_stat$Deaths_To_Confirmed)
+```
+
+Гістограма
+
+```{r deaths_to_confirmed_hist}
+ggplot(all_stat, aes(Deaths_To_Confirmed)) +
+    geom_histogram(bins=90) +
+    xlim(c(0,1))
+```
+
+&laquo;Рейтинг&raquo;
+
+```{r lethality, fig.height=9}
+(ggplot(all_stat,
+        aes(fct_reorder(Country, desc(Deaths_To_Confirmed)),
+            Deaths_To_Confirmed))
+    + geom_point(size=1)
+    + scale_x_discrete(breaks=breaks_country,
+                       labels=labels_country)
+    + coord_flip()
+    + theme_light()
+    + theme(
+          panel.grid.major.x = element_blank(),
+          panel.border = element_blank(),
+          axis.ticks.x = element_blank(),
+          axis.ticks.y = element_blank())
+    + labs(title="Летальність (померлих до зареєстрованих)",
+           subtitle="Дані CSSE Jhons Hopkins",
+           caption="Чим менше число, тим краще",
+           x="",
+           y="")
+)
+```
+
+[Повернутись на головну](index.html) або [повідомити про
+помилку]((https://github.com/vityok/covid19_ua/issues))

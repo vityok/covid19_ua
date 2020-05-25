@@ -38,8 +38,8 @@ area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
     ##   priority_hosp_area = col_character(),
     ##   edrpou_hosp = col_character(),
     ##   legal_entity_name_hosp = col_character(),
-    ##   legal_entity_lat = col_number(),
-    ##   legal_entity_lng = col_number(),
+    ##   legal_entity_lat = col_double(),
+    ##   legal_entity_lng = col_double(),
     ##   person_gender = col_character(),
     ##   person_age_group = col_character(),
     ##   add_conditions = col_character(),
@@ -51,6 +51,16 @@ area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
     ##   new_recover = col_double()
     ## )
 
+    ## Warning: 82 parsing failures.
+    ##  row              col               expected  actual                                        file
+    ## 1381 legal_entity_lat no trailing characters ,604941 '../covid19_by_area_type_hosp_dynamics.csv'
+    ## 1381 legal_entity_lng no trailing characters ,271351 '../covid19_by_area_type_hosp_dynamics.csv'
+    ## 3272 legal_entity_lat no trailing characters ,604941 '../covid19_by_area_type_hosp_dynamics.csv'
+    ## 3272 legal_entity_lng no trailing characters ,271351 '../covid19_by_area_type_hosp_dynamics.csv'
+    ## 5227 legal_entity_lat no trailing characters ,604941 '../covid19_by_area_type_hosp_dynamics.csv'
+    ## .... ................ ...................... ....... ...........................................
+    ## See problems(...) for more details.
+
 Функція `read_csv`, окрім власне зчитування самої таблиці, іще й намагається правильно визначити типи даних, що зберігаються в кожному зі ствопчиків. І хоча розробники радять вказувати типи даних для кожного стовпчика явним чином, в нашому випадку це може бути зайвим, адже функція вірно визначає всі типи даних, навіть [`Date`](https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/Dates) для стовпчика `zvit_date`.
 
 ``` r
@@ -60,12 +70,12 @@ head(area_dyn)
     ## # A tibble: 6 x 16
     ##   zvit_date  registration_ar… priority_hosp_a… edrpou_hosp legal_entity_na…
     ##   <date>     <chr>            <chr>            <chr>       <chr>           
-    ## 1 2020-05-18 Вінницька        Вінницька        01982494    КНП БЕРШАДСЬКА …
-    ## 2 2020-05-18 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
-    ## 3 2020-05-18 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
-    ## 4 2020-05-18 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
-    ## 5 2020-05-18 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
-    ## 6 2020-05-18 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
+    ## 1 2020-05-24 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
+    ## 2 2020-05-24 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
+    ## 3 2020-05-24 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
+    ## 4 2020-05-24 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
+    ## 5 2020-05-24 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
+    ## 6 2020-05-24 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
     ## # … with 11 more variables: legal_entity_lat <dbl>, legal_entity_lng <dbl>,
     ## #   person_gender <chr>, person_age_group <chr>, add_conditions <chr>,
     ## #   is_medical_worker <chr>, new_susp <dbl>, new_confirm <dbl>,
@@ -87,10 +97,10 @@ zvit\_date, registration\_area, priority\_hosp\_area, edrpou\_hosp, legal\_entit
 
 ``` r
 daily_area_reg_dyn <- area_dyn %>%
-    select(zvit_date, registration_area, new_susp, new_confirm, new_death) %>%
+    select(zvit_date, priority_hosp_area, new_susp, new_confirm, new_death) %>%
     mutate(registration_area=factor(case_when(
-               registration_area == "м. Київ" ~ "м. Київ",
-               TRUE ~ stringr::str_to_title(registration_area)))) %>%
+               priority_hosp_area == "м. Київ" ~ "м. Київ",
+               TRUE ~ stringr::str_to_title(priority_hosp_area)))) %>%
     group_by(zvit_date, registration_area) %>%
     summarise(new_susp = sum(new_susp),
               new_confirm = sum(new_confirm),

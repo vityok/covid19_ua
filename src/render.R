@@ -20,3 +20,6 @@ render('forecast_fable.Rmd',
 
 render('forecast_prophet.Rmd',
        output_format = github_document())
+
+render('reading_csse_ts.Rmd',
+       output_format = github_document())
