@@ -8,5 +8,5 @@ cp -ra fig_histograms_dyn ../docs
 cp -ra fig_forecast_arima ../docs
 cp -ra fig_forecast_fable ../docs
 cp -ra fig_forecast_prophet ../docs
-cp -ra fig_reading_who_ts ../docs
+cp -ra fig_reading_csse_ts ../docs
 
