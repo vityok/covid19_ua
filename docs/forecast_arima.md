@@ -37,13 +37,13 @@ area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
     ##   new_recover = col_double()
     ## )
 
-    ## Warning: 82 parsing failures.
+    ## Warning: 86 parsing failures.
     ##  row              col               expected  actual                                        file
-    ## 1381 legal_entity_lat no trailing characters ,604941 '../covid19_by_area_type_hosp_dynamics.csv'
-    ## 1381 legal_entity_lng no trailing characters ,271351 '../covid19_by_area_type_hosp_dynamics.csv'
-    ## 3272 legal_entity_lat no trailing characters ,604941 '../covid19_by_area_type_hosp_dynamics.csv'
-    ## 3272 legal_entity_lng no trailing characters ,271351 '../covid19_by_area_type_hosp_dynamics.csv'
-    ## 5227 legal_entity_lat no trailing characters ,604941 '../covid19_by_area_type_hosp_dynamics.csv'
+    ## 1300 legal_entity_lat no trailing characters ,006038 '../covid19_by_area_type_hosp_dynamics.csv'
+    ## 1300 legal_entity_lng no trailing characters ,655758 '../covid19_by_area_type_hosp_dynamics.csv'
+    ## 1392 legal_entity_lat no trailing characters ,604941 '../covid19_by_area_type_hosp_dynamics.csv'
+    ## 1392 legal_entity_lng no trailing characters ,271351 '../covid19_by_area_type_hosp_dynamics.csv'
+    ## 3283 legal_entity_lat no trailing characters ,604941 '../covid19_by_area_type_hosp_dynamics.csv'
     ## .... ................ ...................... ....... ...........................................
     ## See problems(...) for more details.
 

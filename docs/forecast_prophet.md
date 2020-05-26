@@ -52,13 +52,13 @@ df <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
     ##   new_recover = col_double()
     ## )
 
-    ## Warning: 82 parsing failures.
+    ## Warning: 86 parsing failures.
     ##  row              col               expected  actual                                        file
-    ## 1381 legal_entity_lat no trailing characters ,604941 '../covid19_by_area_type_hosp_dynamics.csv'
-    ## 1381 legal_entity_lng no trailing characters ,271351 '../covid19_by_area_type_hosp_dynamics.csv'
-    ## 3272 legal_entity_lat no trailing characters ,604941 '../covid19_by_area_type_hosp_dynamics.csv'
-    ## 3272 legal_entity_lng no trailing characters ,271351 '../covid19_by_area_type_hosp_dynamics.csv'
-    ## 5227 legal_entity_lat no trailing characters ,604941 '../covid19_by_area_type_hosp_dynamics.csv'
+    ## 1300 legal_entity_lat no trailing characters ,006038 '../covid19_by_area_type_hosp_dynamics.csv'
+    ## 1300 legal_entity_lng no trailing characters ,655758 '../covid19_by_area_type_hosp_dynamics.csv'
+    ## 1392 legal_entity_lat no trailing characters ,604941 '../covid19_by_area_type_hosp_dynamics.csv'
+    ## 1392 legal_entity_lng no trailing characters ,271351 '../covid19_by_area_type_hosp_dynamics.csv'
+    ## 3283 legal_entity_lat no trailing characters ,604941 '../covid19_by_area_type_hosp_dynamics.csv'
     ## .... ................ ...................... ....... ...........................................
     ## See problems(...) for more details.
 
@@ -108,12 +108,12 @@ tail(future)
 ```
 
     ##            ds
-    ## 62 2020-06-02
     ## 63 2020-06-03
     ## 64 2020-06-04
     ## 65 2020-06-05
     ## 66 2020-06-06
     ## 67 2020-06-07
+    ## 68 2020-06-08
 
 As with most modeling procedures in R, we use the generic predict function to get our forecast. The forecast object is a dataframe with a column yhat containing the forecast. It has additional columns for uncertainty intervals and seasonal components.
 
@@ -123,12 +123,12 @@ tail(forecast[c('ds', 'yhat', 'yhat_lower', 'yhat_upper')])
 ```
 
     ##            ds     yhat yhat_lower yhat_upper
-    ## 62 2020-06-02 519.6943   397.8697   638.5647
-    ## 63 2020-06-03 586.2447   462.7451   718.6403
-    ## 64 2020-06-04 537.1718   414.6171   663.9287
-    ## 65 2020-06-05 560.1487   431.8574   680.4517
-    ## 66 2020-06-06 520.7512   398.5957   649.0729
-    ## 67 2020-06-07 393.3554   267.4790   509.1515
+    ## 63 2020-06-03 580.9255   461.2299   701.2187
+    ## 64 2020-06-04 530.7038   411.9131   646.9602
+    ## 65 2020-06-05 553.6721   436.8731   668.1294
+    ## 66 2020-06-06 517.8909   395.9584   646.8016
+    ## 67 2020-06-07 396.1093   267.6974   518.9558
+    ## 68 2020-06-08 445.0832   319.5548   569.9501
 
 You can use the generic plot function to plot the forecast, by passing in the model and the forecast dataframe.
 
