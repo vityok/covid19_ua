@@ -12,16 +12,13 @@ knitr::opts_chunk$set(fig.retina=2, fig.path = "fig_histograms_dyn/")
 
 ## Дні, коли найбільше та найменше реєструють
 
-```{r, message = FALSE, results='hide'}
+Насправді це не зовсім гістограми, а швидше стовпчикові діаграми.
+
+```{r, message = FALSE, warning = FALSE, results='hide'}
 library(tidyverse)
-Sys.setlocale(category="LC_ALL",locale="uk_UA.utf8" )
-```
 
-```{r}
 area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
-```
 
-```{r}
 area_dyn <- area_dyn %>%
     mutate(Weekday_Num = factor(strftime(zvit_date, format="%u"))) %>%
     mutate(Weekday_Name = factor(case_when(
@@ -47,29 +44,127 @@ dyn_by_day <- area_dyn %>%
 
 ## Підозри
 
-```{r}
-(ggplot(dyn_by_day, aes(x=Weekday_Num, y=new_susp))
-    + geom_bar(stat="identity"))
+```{r dyn_by_day_susp}
+(ggplot(dyn_by_day,
+        aes(fct_reorder(Weekday_Name, Weekday_Num,
+                        .fun=identity, .desc=FALSE),
+            new_susp))
+    + geom_bar(stat="identity")
+    + theme_light()
+    + labs(title="Кількість підозр",
+           x = "",
+           y = "Зареєстровано підозр",
+	       caption = "Дані: ЦГЗ та НСЗУ"))
 ```
 
 ## Підтверджених випадків
 
-```{r}
+```{r dyn_by_day_confirm}
 (ggplot(dyn_by_day,
         aes(fct_reorder(Weekday_Name, Weekday_Num,
                         .fun=identity, .desc=FALSE),
             new_confirm))
     + geom_bar(stat="identity")
-    + theme_light())
+    + theme_light()
+    + labs(title="Кількість підтверджених",
+           x = "",
+           y = "Підтверджено випадків",
+	       caption = "Дані: ЦГЗ та НСЗУ"))
 ```
 
 ## Смертей
 
-```{r}
+```{r dyn_by_day_death}
 (ggplot(dyn_by_day, aes(x=Weekday_Num, y=new_death))
     + geom_bar(stat="identity")
-    + theme_light())
+    + theme_light()
+    + labs(title="Летальних випадків",
+           x = "Зареєстровано смертей",
+           y = "",
+	       caption = "Дані: ЦГЗ та НСЗУ"))
 ```
+
+# Вік та стать хворих
+
+## Вік
+
+```{r}
+age_dyn <- area_dyn %>%
+    group_by(person_age_group) %>%
+    summarise(new_death = sum(new_death),
+              new_confirm = sum(new_confirm)) %>%
+    mutate(lethality = new_death / new_confirm)
+
+age_dyn
+```
+
+Летальних випадків в залежності від вікової групи хворого:
+
+```{r age_dyn_death}
+(ggplot(age_dyn, aes(person_age_group, new_death))
+    + geom_col()
+    + theme_light()
+    + labs(title="",
+           x = "",
+           y = "",
+	       caption = "Дані: ЦГЗ та НСЗУ"))
+```
+
+Підтверджених хворих в залежності від вікової групи:
+
+```{r age_dyn_confirm}
+(ggplot(age_dyn, aes(person_age_group, new_confirm))
+    + geom_col()
+    + theme_light()
+    + labs(title="",
+           x = "",
+           y = "",
+	       caption = "Дані: ЦГЗ та НСЗУ"))
+```
+
+Поточна летальність в залежності від вікової групи:
+
+```{r age_dyn_lethality}
+(ggplot(age_dyn, aes(person_age_group, lethality*100))
+    + geom_col()
+    + theme_light()
+    + labs(title="Поточна летальність",
+           x = "Вікова група",
+           y = "Летальність (відсотків летальних до зареєстрованих)",
+	       caption = "Дані: ЦГЗ та НСЗУ"))
+```
+
+## Стать
+
+Підтверджених хворих в залежності від статі:
+
+```{r}
+gender_dyn <- area_dyn %>%
+    group_by(person_gender) %>%
+    summarise(new_death = sum(new_death),
+              new_confirm = sum(new_confirm))
+```
+
+```{r gender_dyn_death}
+(ggplot(gender_dyn, aes(person_gender, new_death))
+    + geom_col()
+    + theme_light()
+    + labs(title="Кількість летальних випадків",
+           x = "Стать",
+           y = "Летальних випадків",
+	       caption = "Дані: ЦГЗ та НСЗУ"))
+```
+
+```{r gender_dyn_confirm}
+(ggplot(gender_dyn, aes(person_gender, new_confirm))
+    + geom_col()
+    + theme_light()
+    + labs(title="",
+           x = "",
+           y = "",
+	       caption = "Дані: ЦГЗ та НСЗУ"))
+```
+
 
 [Повернутись на головну](index.html) або [повідомити про
 помилку]((https://github.com/vityok/covid19_ua/issues))
