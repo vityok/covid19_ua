@@ -1,7 +1,7 @@
 library(tidyverse)
-library(ggplot2)
 
 Sys.setlocale(category="LC_ALL",locale="uk_UA.utf8" )
+
 ## Таблиця в файлі covid19_by_area_type_hosp_dynamics.csv має доволі
 ## велику кількість стовпчиків, нижче їх перелічено для зручності
 ## подальшого використання в скрипті:
@@ -10,15 +10,15 @@ Sys.setlocale(category="LC_ALL",locale="uk_UA.utf8" )
 ## legal_entity_name_hosp,legal_entity_lat,legal_entity_lng,
 ## person_gender,person_age_group,add_conditions,is_medical_worker,
 ## new_susp,new_confirm,active_confirm,new_death,new_recover
-area_dyn_csv <- read.csv('../covid19_by_area_type_hosp_dynamics.csv')
-area_dyn <- as.data.frame(area_dyn_csv)
+area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
 
 daily_area_dyn <- area_dyn %>%
-    select(zvit_date, new_susp, new_confirm, new_death) %>%
+    select(zvit_date, new_susp, new_confirm, new_death, active_confirm) %>%
     group_by(zvit_date) %>%
     summarise(new_susp = sum(new_susp),
               new_confirm = sum(new_confirm),
-              new_death = sum(new_death))
+              new_death = sum(new_death),
+              active_confirm = sum(active_confirm))
 
 daily_area_dyn <- daily_area_dyn %>%
     mutate(Cdate = as.Date(strptime(zvit_date, "%Y-%m-%d"))) %>%
@@ -41,12 +41,13 @@ ggsave("daily_area_dyn.png", width=9, height=5.7, dpi=98)
 ## collapse several columns into a single column "value" (key-value
 ## pair) factored by the column named "variable"
 daily_area_gath <- daily_area_dyn %>%
-    select(Cdate, new_susp, new_confirm, new_death) %>%
+    select(Cdate, new_susp, new_confirm, new_death, active_confirm) %>%
     pivot_longer(-Cdate, names_to = "variable", values_to = "value")
 
 (ggplot(daily_area_gath, aes(x=Cdate,y=value))
     + geom_point(aes(color = variable))
     + geom_line(aes(color = variable, linetype = variable))
+##    + geom_smooth(aes(color = variable))
     + theme_light()
 )
 
@@ -97,5 +98,7 @@ fc.new_susp <- predict(hw.new_susp, 14)
 
 ## Графік моделі та прогнозу буде збережено у PNG файл
 png("holt-winters_14days_forecast.png", width=640)
+
 plot(hw.new_susp, fc.new_susp)
+
 dev.off()

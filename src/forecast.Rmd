@@ -1,11 +1,63 @@
 # todo: forecasts
 
+```{r, echo = FALSE, results = 'hide'}
+knitr::opts_chunk$set(fig.retina=2, fig.path = "fig_forecast/")
+```
+
 Побудова прогнозів різними методами та різними функціями:
 
  - [Facebook Prophet](forecast_prophet.html)
  - [Tidyverts Fable](forecast_fable.html)
  - [Stats ARIMA](forecast_arima.html)
  - [Холт-Вінтерс](forecast_hw.html)
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(fable)
+library(tsibble)
+library(feasts)
+
+area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
+
+daily_area_dyn <- area_dyn %>%
+    select(zvit_date, new_susp, new_confirm, new_death) %>%
+    group_by(zvit_date) %>%
+    summarise(new_susp = sum(new_susp),
+              new_confirm = sum(new_confirm),
+              new_death = sum(new_death)) %>%
+    filter(zvit_date > as.Date("2020-04-01"))
+
+tle.dyn <- daily_area_dyn %>%
+    as_tsibble(index=zvit_date)
+
+tle.dyn <- tail(tle.dyn, 60)
+```
+
+```{r, echo = FALSE, message = FALSE}
+ggplot(tle.dyn, aes(zvit_date, new_confirm)) +
+    geom_point() +
+    geom_smooth(method='lm', se = FALSE) +
+    theme_light()
+```
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+ap <- tail(tle.dyn,14) %>%
+    model(
+        ets = ETS(box_cox(new_confirm, 0.3)),
+        arima = ARIMA(new_confirm),
+        snaive = SNAIVE(new_confirm),
+        tslm = TSLM(new_confirm ~ trend())) %>%
+    forecast(h = "2 weeks") %>%
+    autoplot(tle.dyn, level = NULL)
+```
+
+```{r, echo = FALSE, message = FALSE}
+(ap
+    + geom_smooth(method='glm', fullrange = TRUE, se = FALSE)
+    + theme_light()
+    + theme(legend.position = "bottom"))
+
+```
 
 [Повернутись на головну](index.html) або [повідомити про
 помилку]((https://github.com/vityok/covid19_ua/issues))

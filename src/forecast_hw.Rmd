@@ -7,7 +7,7 @@ title: "Побудова прогнозів із використанням Tidy
 https://otexts.com/fpp2/holt-winters.html
 
 ```{r, echo = FALSE, results = 'hide'}
-knitr::opts_chunk$set(fig.retina=2, fig.path = "fig_forecast_fw/")
+knitr::opts_chunk$set(fig.retina=2, fig.path = "fig_forecast_hw/")
 Sys.setlocale(category="LC_ALL",locale="uk_UA.utf8" )
 ```
 
@@ -34,7 +34,7 @@ ts.new_susp    <- ts(daily_area_dyn$new_susp, frequency=7)
 ```{r}
 acf(ts.new_susp)
 
-ccf(ts.new_susp, ts.new_confirm)
+ccf(ts.new_susp, ts.new_confirm, lag.max = 10)
 ```
 
 Побудова моделі Холта-Вінтерса

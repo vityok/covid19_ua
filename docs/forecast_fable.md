@@ -8,22 +8,7 @@
 ``` r
 library(tidyverse)
 library(fable)
-```
-
-    ## Loading required package: fabletools
-
-``` r
 library(tsibble)
-```
-
-    ## 
-    ## Attaching package: 'tsibble'
-
-    ## The following object is masked from 'package:dplyr':
-    ## 
-    ##     id
-
-``` r
 library(feasts)
 ```
 
@@ -43,8 +28,8 @@ area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
     ##   priority_hosp_area = col_character(),
     ##   edrpou_hosp = col_character(),
     ##   legal_entity_name_hosp = col_character(),
-    ##   legal_entity_lat = col_double(),
-    ##   legal_entity_lng = col_double(),
+    ##   legal_entity_lat = col_number(),
+    ##   legal_entity_lng = col_number(),
     ##   person_gender = col_character(),
     ##   person_age_group = col_character(),
     ##   add_conditions = col_character(),
@@ -55,16 +40,6 @@ area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
     ##   new_death = col_double(),
     ##   new_recover = col_double()
     ## )
-
-    ## Warning: 86 parsing failures.
-    ##  row              col               expected  actual                                        file
-    ## 1300 legal_entity_lat no trailing characters ,006038 '../covid19_by_area_type_hosp_dynamics.csv'
-    ## 1300 legal_entity_lng no trailing characters ,655758 '../covid19_by_area_type_hosp_dynamics.csv'
-    ## 1392 legal_entity_lat no trailing characters ,604941 '../covid19_by_area_type_hosp_dynamics.csv'
-    ## 1392 legal_entity_lng no trailing characters ,271351 '../covid19_by_area_type_hosp_dynamics.csv'
-    ## 3283 legal_entity_lat no trailing characters ,604941 '../covid19_by_area_type_hosp_dynamics.csv'
-    ## .... ................ ...................... ....... ...........................................
-    ## See problems(...) for more details.
 
 ``` r
 daily_area_dyn <- area_dyn %>%

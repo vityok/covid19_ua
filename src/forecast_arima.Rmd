@@ -46,9 +46,9 @@ differencing, and the MA order.
 fit.new_confirm <- arima(ts.new_confirm, order=c(3,0,0))
 tsdiag(fit.new_confirm)
 
-predict <- predict(fit.new_confirm, 7)
+predict_confirm <- predict(fit.new_confirm, 7)
 
-#plot(predict)
+predict_confirm
 ```
 
 [Повернутись на головну](index.html) або [повідомити про

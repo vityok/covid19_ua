@@ -45,20 +45,30 @@ dyn_by_day <- area_dyn %>%
               new_death = sum(new_death))
 ```
 
+## Підозри
 
 ```{r}
 (ggplot(dyn_by_day, aes(x=Weekday_Num, y=new_susp))
     + geom_bar(stat="identity"))
 ```
 
+## Підтверджених випадків
+
 ```{r}
-(ggplot(dyn_by_day, aes(x=Weekday_Num, y=new_confirm))
-    + geom_bar(stat="identity"))
+(ggplot(dyn_by_day,
+        aes(fct_reorder(Weekday_Name, Weekday_Num,
+                        .fun=identity, .desc=FALSE),
+            new_confirm))
+    + geom_bar(stat="identity")
+    + theme_light())
 ```
+
+## Смертей
 
 ```{r}
 (ggplot(dyn_by_day, aes(x=Weekday_Num, y=new_death))
-    + geom_bar(stat="identity"))
+    + geom_bar(stat="identity")
+    + theme_light())
 ```
 
 [Повернутись на головну](index.html) або [повідомити про

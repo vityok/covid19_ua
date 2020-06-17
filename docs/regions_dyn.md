@@ -38,8 +38,8 @@ area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
     ##   priority_hosp_area = col_character(),
     ##   edrpou_hosp = col_character(),
     ##   legal_entity_name_hosp = col_character(),
-    ##   legal_entity_lat = col_double(),
-    ##   legal_entity_lng = col_double(),
+    ##   legal_entity_lat = col_number(),
+    ##   legal_entity_lng = col_number(),
     ##   person_gender = col_character(),
     ##   person_age_group = col_character(),
     ##   add_conditions = col_character(),
@@ -51,16 +51,6 @@ area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
     ##   new_recover = col_double()
     ## )
 
-    ## Warning: 94 parsing failures.
-    ##  row              col               expected  actual                                        file
-    ## 1364 legal_entity_lat no trailing characters ,604941 '../covid19_by_area_type_hosp_dynamics.csv'
-    ## 1364 legal_entity_lng no trailing characters ,271351 '../covid19_by_area_type_hosp_dynamics.csv'
-    ## 3257 legal_entity_lat no trailing characters ,875384 '../covid19_by_area_type_hosp_dynamics.csv'
-    ## 3257 legal_entity_lng no trailing characters ,457147 '../covid19_by_area_type_hosp_dynamics.csv'
-    ## 3258 legal_entity_lat no trailing characters ,604941 '../covid19_by_area_type_hosp_dynamics.csv'
-    ## .... ................ ...................... ....... ...........................................
-    ## See problems(...) for more details.
-
 Функція `read_csv`, окрім власне зчитування самої таблиці, іще й намагається правильно визначити типи даних, що зберігаються в кожному зі ствопчиків. І хоча розробники радять вказувати типи даних для кожного стовпчика явним чином, в нашому випадку це може бути зайвим, адже функція вірно визначає всі типи даних, навіть [`Date`](https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/Dates) для стовпчика `zvit_date`.
 
 ``` r
@@ -70,12 +60,12 @@ head(area_dyn)
     ## # A tibble: 6 x 16
     ##   zvit_date  registration_ar… priority_hosp_a… edrpou_hosp legal_entity_na…
     ##   <date>     <chr>            <chr>            <chr>       <chr>           
-    ## 1 2020-05-27 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
-    ## 2 2020-05-27 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
-    ## 3 2020-05-27 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
-    ## 4 2020-05-27 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
-    ## 5 2020-05-27 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
-    ## 6 2020-05-27 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
+    ## 1 2020-06-15 Вінницька        Вінницька        01982494    КНП БЕРШАДСЬКА …
+    ## 2 2020-06-15 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
+    ## 3 2020-06-15 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
+    ## 4 2020-06-15 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
+    ## 5 2020-06-15 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
+    ## 6 2020-06-15 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
     ## # … with 11 more variables: legal_entity_lat <dbl>, legal_entity_lng <dbl>,
     ## #   person_gender <chr>, person_age_group <chr>, add_conditions <chr>,
     ## #   is_medical_worker <chr>, new_susp <dbl>, new_confirm <dbl>,

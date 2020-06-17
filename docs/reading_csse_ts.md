@@ -16,6 +16,9 @@ library(tidyverse)
 -   `time_series_covid19_deaths_global.csv`: кількість померлих,
 -   `time_series_covid19_recovered_global.csv`: скільки одужало.
 
+Зчитування даних
+----------------
+
 Всі три файла мають подібну структуру, особливістю якої є те, що для окремих країн показники розбито за регіонами, а дата, коли показник зареєстровано, вказана в назві стовпчика.
 
 Така структура даних не дуже добре підходить для зручної обробки в пакеті `tidyverse` системи R. [Бажано, аби](https://r4ds.had.co.nz/tidy-data.html#tidy-data-1):
@@ -77,7 +80,7 @@ head(confirmed_global_sum)
 length(confirmed_global_sum$Confirmed)
 ```
 
-    ## [1] 23876
+    ## [1] 27636
 
 Зчитування даних про кількість летальних випадків.
 
@@ -156,7 +159,7 @@ head(all_sum_raw)
 length(all_sum_raw$Country)
 ```
 
-    ## [1] 23876
+    ## [1] 27636
 
 Обчислимо співвідношення:
 
@@ -181,17 +184,17 @@ all_stat <- all_sum_raw %>%
 str(all_stat)
 ```
 
-    ## tibble [23,876 × 10] (S3: tbl_df/tbl/data.frame)
+    ## tibble [27,636 × 10] (S3: tbl_df/tbl/data.frame)
     ##  $ Country               : Factor w/ 188 levels "Afghanistan",..: 1 1 1 1 1 1 1 1 1 1 ...
-    ##  $ Date                  : Date[1:23876], format: "20-01-22" "20-01-23" ...
-    ##  $ Deaths                : num [1:23876] 0 0 0 0 0 0 0 0 0 0 ...
-    ##  $ Confirmed             : num [1:23876] 0 0 0 0 0 0 0 0 0 0 ...
-    ##  $ Recovered             : num [1:23876] 0 0 0 0 0 0 0 0 0 0 ...
-    ##  $ Deaths_To_Recovered   : num [1:23876] 0 0 0 0 0 0 0 0 0 0 ...
-    ##  $ Deaths_To_Confirmed   : num [1:23876] 0 0 0 0 0 0 0 0 0 0 ...
-    ##  $ Recovered_To_Confirmed: num [1:23876] NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN ...
-    ##  $ Recovered_To_Deaths   : num [1:23876] 0 0 0 0 0 0 0 0 0 0 ...
-    ##  $ Active_To_Confirmed   : num [1:23876] NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN ...
+    ##  $ Date                  : Date[1:27636], format: "20-01-22" "20-01-23" ...
+    ##  $ Deaths                : num [1:27636] 0 0 0 0 0 0 0 0 0 0 ...
+    ##  $ Confirmed             : num [1:27636] 0 0 0 0 0 0 0 0 0 0 ...
+    ##  $ Recovered             : num [1:27636] 0 0 0 0 0 0 0 0 0 0 ...
+    ##  $ Deaths_To_Recovered   : num [1:27636] 0 0 0 0 0 0 0 0 0 0 ...
+    ##  $ Deaths_To_Confirmed   : num [1:27636] 0 0 0 0 0 0 0 0 0 0 ...
+    ##  $ Recovered_To_Confirmed: num [1:27636] NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN ...
+    ##  $ Recovered_To_Deaths   : num [1:27636] 0 0 0 0 0 0 0 0 0 0 ...
+    ##  $ Active_To_Confirmed   : num [1:27636] NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN ...
 
 Останній запис в таблиці:
 
@@ -203,15 +206,15 @@ str(last_stat)
 
     ## tibble [188 × 10] (S3: tbl_df/tbl/data.frame)
     ##  $ Country               : Factor w/ 188 levels "Afghanistan",..: 1 2 3 4 5 6 7 8 9 10 ...
-    ##  $ Date                  : Date[1:188], format: "20-05-27" "20-05-27" ...
-    ##  $ Deaths                : num [1:188] 227 33 623 51 4 3 500 98 103 645 ...
-    ##  $ Confirmed             : num [1:188] 12456 1050 8857 763 71 ...
-    ##  $ Recovered             : num [1:188] 1138 812 5129 676 18 ...
-    ##  $ Deaths_To_Recovered   : num [1:188] 0.1995 0.0406 0.1215 0.0754 0.2222 ...
-    ##  $ Deaths_To_Confirmed   : num [1:188] 0.0182 0.0314 0.0703 0.0668 0.0563 ...
-    ##  $ Recovered_To_Confirmed: num [1:188] 0.0914 0.7733 0.5791 0.886 0.2535 ...
-    ##  $ Recovered_To_Deaths   : num [1:188] 5.01 24.61 8.23 13.25 4.5 ...
-    ##  $ Active_To_Confirmed   : num [1:188] 0.8904 0.1952 0.3506 0.0472 0.6901 ...
+    ##  $ Date                  : Date[1:188], format: "20-06-16" "20-06-16" ...
+    ##  $ Deaths                : num [1:188] 491 37 788 52 6 3 878 293 102 681 ...
+    ##  $ Confirmed             : num [1:188] 26310 1672 11147 854 148 ...
+    ##  $ Recovered             : num [1:188] 5508 1064 7842 789 64 ...
+    ##  $ Deaths_To_Recovered   : num [1:188] 0.0891 0.0348 0.1005 0.0659 0.0938 ...
+    ##  $ Deaths_To_Confirmed   : num [1:188] 0.0187 0.0221 0.0707 0.0609 0.0405 ...
+    ##  $ Recovered_To_Confirmed: num [1:188] 0.209 0.636 0.704 0.924 0.432 ...
+    ##  $ Recovered_To_Deaths   : num [1:188] 11.22 28.76 9.95 15.17 10.67 ...
+    ##  $ Active_To_Confirmed   : num [1:188] 0.772 0.3415 0.2258 0.0152 0.527 ...
 
 Створимо спільний підпис для всіх графіків, в якому буде вказано джерело даних та дату останнього звіту:
 
@@ -222,7 +225,7 @@ subtitle <- paste("Дані CSSE Johns Hopkins станом на", last_report_d
 subtitle
 ```
 
-    ## [1] "Дані CSSE Johns Hopkins станом на 27.05.20"
+    ## [1] "Дані CSSE Johns Hopkins станом на 16.06.20"
 
 ``` r
 ua <- last_stat[last_stat$Country == 'Ukraine',]
@@ -235,7 +238,7 @@ ua
     ## # A tibble: 1 x 10
     ##   Country Date       Deaths Confirmed Recovered Deaths_To_Recov…
     ##   <fct>   <date>      <dbl>     <dbl>     <dbl>            <dbl>
-    ## 1 Ukraine 20-05-27      658     21905      7995           0.0823
+    ## 1 Ukraine 20-06-16      922     33209     15054           0.0612
     ## # … with 4 more variables: Deaths_To_Confirmed <dbl>,
     ## #   Recovered_To_Confirmed <dbl>, Recovered_To_Deaths <dbl>,
     ## #   Active_To_Confirmed <dbl>
@@ -244,42 +247,28 @@ ua
 ua$Deaths_To_Recovered
 ```
 
-    ## [1] 0.08230144
+    ## [1] 0.06124618
 
 ``` r
 summary(last_stat$Deaths_To_Recovered)
 ```
 
     ##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
-    ##  0.00000  0.01761  0.04759  0.47529  0.11481 33.27684
+    ##  0.00000  0.01536  0.03928  0.43858  0.08483 32.73656
 
 ``` r
 summary(last_stat$Active_To_Confirmed)
 ```
 
     ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-    ##  0.0000  0.1658  0.4057  0.4113  0.6529  1.0000
+    ## 0.00000 0.08494 0.31939 0.35078 0.55244 0.97713
 
 ``` r
 #all_stat[last_stat$Recovered_To_Deaths > be$Recovered_To_Deaths,]
 ```
 
-Скільки одужало на одного померлого (чим більше, тим краще), загальна статистика для всіх країн:
-
-``` r
-summary(last_stat$Recovered_To_Deaths)
-```
-
-    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-    ##   0.000   5.657  14.139  32.752  35.159 751.130
-
-Та поточний показник для України:
-
-``` r
-ua$Recovered_To_Deaths
-```
-
-    ## [1] 12.15046
+Загальна динаміка
+-----------------
 
 ``` r
 breaks_country <- c("Ukraine", "Belarus", "Poland", "Germany", "France",
@@ -292,6 +281,105 @@ labels_country <- c("Україна", "Білорусь", "Польща", "Ні�
                     "Австрія", "Канада", "КНР", "Італія", "Іспанія",
                     "Бразилія")
 ```
+
+Виокримо лише перелічені вище країни із загального масиву інформації:
+
+``` r
+some_stat <- all_stat[all_stat$Country %in% factor(breaks_country),]
+some_last_stat <- last_stat[last_stat$Country %in% factor(breaks_country),]
+```
+
+``` r
+(ggplot(some_stat)
+    + geom_line(aes(x=Date,y=Confirmed))
+    + facet_wrap(vars(Country), ncol = 5)
+    + theme_light())
+```
+
+<img src="fig_reading_csse_ts/confirmed_chart-1.png" width="672" />
+
+``` r
+(ggplot(some_stat)
+    + geom_line(aes(x=Date,y=Recovered))
+    + facet_wrap(vars(Country), ncol = 5)
+    + theme_light())
+```
+
+<img src="fig_reading_csse_ts/recovered_chart-1.png" width="672" />
+
+``` r
+(ggplot(some_stat)
+    + geom_line(aes(x=Date,y=Deaths))
+    + facet_wrap(vars(Country), ncol = 5)
+    + theme_light())
+```
+
+<img src="fig_reading_csse_ts/deaths_chart-1.png" width="672" />
+
+``` r
+(ggplot(some_stat)
+    + geom_line(aes(x=Date,y=Confirmed - Deaths - Recovered))
+    + facet_wrap(vars(Country), ncol = 5)
+    + theme_light())
+```
+
+<img src="fig_reading_csse_ts/active_chart-1.png" width="672" />
+
+Обчислимо співвідношення підтверджених випадків на певну дату до показника тиждень тому (темп поширення інфекції) todo
+
+``` r
+some_stat <- some_stat %>%
+    group_by(Country,Date) %>%
+    mutate()
+
+confirmed_lag <- some_stat %>%
+    select(Date, Country, Confirmed) %>%
+    group_by(Country) %>%
+    mutate(Confirmed_Lag = lag(Confirmed, n=7, order_by=Date))
+
+confirmed_rate <- confirmed_lag %>%
+    group_by(Country) %>%
+    mutate(Confirmed_Rate = if_else(Confirmed_Lag > 0,
+                                    Confirmed / Confirmed_Lag,
+                                    1))
+```
+
+``` r
+(ggplot(confirmed_rate)
+    + geom_line(aes(x=Date,y=Confirmed_Rate))
+    + facet_wrap(vars(Country), ncol = 5)
+    + ylim(c(1,5))
+    + theme_light()
+    + labs(title="Темп поширення інфекції",
+           subtitle=subtitle,
+           caption="Якщо дорівнює 1, то епідемію зупинено, кількість хворих стала",
+           y="Підтверджених випадків на поточний день до тиждень тому",
+           x=""))
+```
+
+    ## Warning: Removed 7 row(s) containing missing values (geom_path).
+
+<img src="fig_reading_csse_ts/rate_of_spread-1.png" width="864" />
+
+Скільки одужало на одного померлого
+-----------------------------------
+
+Скільки одужало на одного померлого (чим більше, тим краще), загальна статистика для всіх країн:
+
+``` r
+summary(last_stat$Recovered_To_Deaths)
+```
+
+    ##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+    ##    0.000    7.414   16.800   41.684   45.008 1198.577
+
+Та поточний показник для України:
+
+``` r
+ua$Recovered_To_Deaths
+```
+
+    ## [1] 16.32755
 
 «Рейтинг»
 
@@ -316,7 +404,7 @@ labels_country <- c("Україна", "Білорусь", "Польща", "Ні�
            y=""))
 ```
 
-    ## Warning: Removed 9 rows containing missing values (geom_point).
+    ## Warning: Removed 12 rows containing missing values (geom_point).
 
 <img src="fig_reading_csse_ts/recovered_to_deaths-1.png" width="672" />
 
@@ -324,15 +412,13 @@ labels_country <- c("Україна", "Білорусь", "Польща", "Ні�
 last_stat[last_stat$Deaths_To_Recovered > 1,]
 ```
 
-    ## # A tibble: 6 x 10
+    ## # A tibble: 4 x 10
     ##   Country Date       Deaths Confirmed Recovered Deaths_To_Recov…
     ##   <fct>   <date>      <dbl>     <dbl>     <dbl>            <dbl>
-    ## 1 Haiti   20-05-27       34      1320        22             1.55
-    ## 2 Maurit… 20-05-27       16       292        15             1.07
-    ## 3 Nether… 20-05-27     5890     45970       177            33.3 
-    ## 4 South … 20-05-27       10       994         6             1.67
-    ## 5 United… 20-05-27    37542    268619      1166            32.2 
-    ## 6 Yemen   20-05-27       53       256        10             5.3 
+    ## 1 Haiti   20-06-16       80      4547        24             3.33
+    ## 2 Nether… 20-06-16     6089     49295       186            32.7 
+    ## 3 United… 20-06-16    42054    299600      1293            32.5 
+    ## 4 Yemen   20-06-16      214       885        91             2.35
     ## # … with 4 more variables: Deaths_To_Confirmed <dbl>,
     ## #   Recovered_To_Confirmed <dbl>, Recovered_To_Deaths <dbl>,
     ## #   Active_To_Confirmed <dbl>
@@ -341,32 +427,30 @@ last_stat[last_stat$Deaths_To_Recovered > 1,]
 last_stat[last_stat$Deaths_To_Recovered > 33,]
 ```
 
-    ## # A tibble: 1 x 10
-    ##   Country Date       Deaths Confirmed Recovered Deaths_To_Recov…
-    ##   <fct>   <date>      <dbl>     <dbl>     <dbl>            <dbl>
-    ## 1 Nether… 20-05-27     5890     45970       177             33.3
-    ## # … with 4 more variables: Deaths_To_Confirmed <dbl>,
-    ## #   Recovered_To_Confirmed <dbl>, Recovered_To_Deaths <dbl>,
-    ## #   Active_To_Confirmed <dbl>
+    ## # A tibble: 0 x 10
+    ## # … with 10 variables: Country <fct>, Date <date>, Deaths <dbl>,
+    ## #   Confirmed <dbl>, Recovered <dbl>, Deaths_To_Recovered <dbl>,
+    ## #   Deaths_To_Confirmed <dbl>, Recovered_To_Confirmed <dbl>,
+    ## #   Recovered_To_Deaths <dbl>, Active_To_Confirmed <dbl>
 
 ``` r
 last_stat[last_stat$Deaths_To_Recovered < ua$Deaths_To_Recovered,]
 ```
 
-    ## # A tibble: 126 x 10
+    ## # A tibble: 116 x 10
     ##    Country Date       Deaths Confirmed Recovered Deaths_To_Recov…
     ##    <fct>   <date>      <dbl>     <dbl>     <dbl>            <dbl>
-    ##  1 Albania 20-05-27       33      1050       812          0.0406 
-    ##  2 Andorra 20-05-27       51       763       676          0.0754 
-    ##  3 Armenia 20-05-27       98      7774      3255          0.0301 
-    ##  4 Austra… 20-05-27      103      7150      6579          0.0157 
-    ##  5 Austria 20-05-27      645     16591     15228          0.0424 
-    ##  6 Azerba… 20-05-27       54      4568      2897          0.0186 
-    ##  7 Bahrain 20-05-27       15      9692      5152          0.00291
-    ##  8 Bangla… 20-05-27      544     38292      7925          0.0686 
-    ##  9 Belarus 20-05-27      214     38956     15923          0.0134 
-    ## 10 Benin   20-05-27        3       210       134          0.0224 
-    ## # … with 116 more rows, and 4 more variables: Deaths_To_Confirmed <dbl>,
+    ##  1 Albania 20-06-16       37      1672      1064          0.0348 
+    ##  2 Armenia 20-06-16      293     17489      6571          0.0446 
+    ##  3 Austra… 20-06-16      102      7370      6861          0.0149 
+    ##  4 Austria 20-06-16      681     17189     16089          0.0423 
+    ##  5 Azerba… 20-06-16      126     10662      5948          0.0212 
+    ##  6 Bahrain 20-06-16       47     19553     13866          0.00339
+    ##  7 Bangla… 20-06-16     1262     94481     36264          0.0348 
+    ##  8 Belarus 20-06-16      318     55369     31273          0.0102 
+    ##  9 Benin   20-06-16        9       532       236          0.0381 
+    ## 10 Bhutan  20-06-16        0        67        24          0      
+    ## # … with 106 more rows, and 4 more variables: Deaths_To_Confirmed <dbl>,
     ## #   Recovered_To_Confirmed <dbl>, Recovered_To_Deaths <dbl>,
     ## #   Active_To_Confirmed <dbl>
 
@@ -384,11 +468,11 @@ last_stat[last_stat$Deaths_To_Recovered < ua$Deaths_To_Recovered,]
     + theme_light())
 ```
 
-    ## Warning: Removed 6 rows containing non-finite values (stat_bin).
+    ## Warning: Removed 4 rows containing non-finite values (stat_bin).
 
     ## Warning: Removed 2 rows containing missing values (geom_bar).
 
-<img src="fig_reading_csse_ts/unnamed-chunk-15-1.png" width="672" />
+<img src="fig_reading_csse_ts/unnamed-chunk-17-1.png" width="672" />
 
 Поточна летальність, або співвідношення кількості летальних випадків до кількості зареєстрованих (чим менше значення, тим краще):
 
@@ -398,7 +482,7 @@ last_stat[last_stat$Deaths_To_Recovered < ua$Deaths_To_Recovered,]
 ua$Deaths_To_Confirmed
 ```
 
-    ## [1] 0.0300388
+    ## [1] 0.02776356
 
 Статистичні моменти для всіх країн:
 
@@ -407,7 +491,7 @@ summary(last_stat$Deaths_To_Confirmed)
 ```
 
     ##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
-    ## 0.000000 0.009754 0.027445 0.036511 0.049162 0.222222
+    ## 0.000000 0.009159 0.022362 0.034269 0.045368 0.241808
 
 Гістограма
 
@@ -453,9 +537,6 @@ summary(last_stat$Deaths_To_Confirmed)
 <img src="fig_reading_csse_ts/lethality-1.png" width="672" />
 
 ``` r
-some_stat <- all_stat[all_stat$Country %in% factor(breaks_country),]
-some_last_stat <- last_stat[last_stat$Country %in% factor(breaks_country),]
-
 (ggplot(some_stat)
     + geom_line(aes(x=Date,y=Deaths_To_Confirmed))
     + geom_point(data=some_last_stat,
@@ -480,7 +561,7 @@ some_last_stat <- last_stat[last_stat$Country %in% factor(breaks_country),]
 mean(last_stat$Deaths_To_Confirmed)
 ```
 
-    ## [1] 0.03651136
+    ## [1] 0.03426943
 
 Та глобальне:
 
@@ -488,6 +569,6 @@ mean(last_stat$Deaths_To_Confirmed)
 sum(last_stat$Deaths)/sum(last_stat$Confirmed)
 ```
 
-    ## [1] 0.06248105
+    ## [1] 0.05428043
 
 [Повернутись на головну](index.html) або [повідомити про помилку]((https://github.com/vityok/covid19_ua/issues))

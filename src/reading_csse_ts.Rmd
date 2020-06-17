@@ -10,7 +10,7 @@ Sys.setlocale(category="LC_ALL",locale="uk_UA.utf8" )
 (в роботі): Як зчитувати та обробляти в R дані, оприлюднені інститутом
 Джонса Хопкінза: `csse_covid_19_data`
 
-```{r}
+```{r, , output = FALSE, message = FALSE, results='hide'}
 library(tidyverse)
 ```
 
@@ -24,6 +24,8 @@ library(tidyverse)
  - `time_series_covid19_confirmed_global.csv`: кількість підтверджених випадків захворювання на коронавірус,
  - `time_series_covid19_deaths_global.csv`: кількість померлих,
  - `time_series_covid19_recovered_global.csv`: скільки одужало.
+
+## Зчитування даних
 
 Всі три файла мають подібну структуру, особливістю якої є те, що для
 окремих країн показники розбито за регіонами, а дата, коли показник
@@ -165,18 +167,9 @@ summary(last_stat$Active_To_Confirmed)
 #all_stat[last_stat$Recovered_To_Deaths > be$Recovered_To_Deaths,]
 ```
 
-Скільки одужало на одного померлого (чим більше, тим краще), загальна
-статистика для всіх країн:
+## Загальна динаміка
 
-```{r}
-summary(last_stat$Recovered_To_Deaths)
-```
 
-Та поточний показник для України:
-
-```{r}
-ua$Recovered_To_Deaths
-```
 
 ```{r}
 breaks_country <- c("Ukraine", "Belarus", "Poland", "Germany", "France",
@@ -188,6 +181,90 @@ labels_country <- c("Україна", "Білорусь", "Польща", "Ні�
                     "США", "Корея", "Росія", "Велика Британія",
                     "Австрія", "Канада", "КНР", "Італія", "Іспанія",
                     "Бразилія")
+```
+
+Виокримо лише перелічені вище країни із загального масиву інформації:
+
+```{r}
+some_stat <- all_stat[all_stat$Country %in% factor(breaks_country),]
+some_last_stat <- last_stat[last_stat$Country %in% factor(breaks_country),]
+```
+
+```{r confirmed_chart}
+(ggplot(some_stat)
+    + geom_line(aes(x=Date,y=Confirmed))
+    + facet_wrap(vars(Country), ncol = 5)
+    + theme_light())
+```
+
+```{r recovered_chart}
+(ggplot(some_stat)
+    + geom_line(aes(x=Date,y=Recovered))
+    + facet_wrap(vars(Country), ncol = 5)
+    + theme_light())
+```
+
+```{r deaths_chart}
+(ggplot(some_stat)
+    + geom_line(aes(x=Date,y=Deaths))
+    + facet_wrap(vars(Country), ncol = 5)
+    + theme_light())
+```
+
+```{r active_chart}
+(ggplot(some_stat)
+    + geom_line(aes(x=Date,y=Confirmed - Deaths - Recovered))
+    + facet_wrap(vars(Country), ncol = 5)
+    + theme_light())
+```
+
+Обчислимо співвідношення підтверджених випадків на певну дату до показника
+тиждень тому (темп поширення інфекції) todo
+
+```{r}
+
+some_stat <- some_stat %>%
+    group_by(Country,Date) %>%
+    mutate()
+
+confirmed_lag <- some_stat %>%
+    select(Date, Country, Confirmed) %>%
+    group_by(Country) %>%
+    mutate(Confirmed_Lag = lag(Confirmed, n=7, order_by=Date))
+
+confirmed_rate <- confirmed_lag %>%
+    group_by(Country) %>%
+    mutate(Confirmed_Rate = if_else(Confirmed_Lag > 0,
+                                    Confirmed / Confirmed_Lag,
+                                    1))
+```
+
+```{r rate_of_spread, fig.width=9}
+(ggplot(confirmed_rate)
+    + geom_line(aes(x=Date,y=Confirmed_Rate))
+    + facet_wrap(vars(Country), ncol = 5)
+    + ylim(c(1,5))
+    + theme_light()
+    + labs(title="Темп поширення інфекції",
+           subtitle=subtitle,
+           caption="Якщо дорівнює 1, то епідемію зупинено, кількість хворих стала",
+           y="Підтверджених випадків на поточний день до тиждень тому",
+           x=""))
+```
+
+## Скільки одужало на одного померлого
+
+Скільки одужало на одного померлого (чим більше, тим краще), загальна
+статистика для всіх країн:
+
+```{r}
+summary(last_stat$Recovered_To_Deaths)
+```
+
+Та поточний показник для України:
+
+```{r}
+ua$Recovered_To_Deaths
 ```
 
 &laquo;Рейтинг&raquo;
@@ -289,9 +366,6 @@ summary(last_stat$Deaths_To_Confirmed)
 ```
 
 ```{r current_lethality_select_countries, fig.height=7,fig.width=9}
-some_stat <- all_stat[all_stat$Country %in% factor(breaks_country),]
-some_last_stat <- last_stat[last_stat$Country %in% factor(breaks_country),]
-
 (ggplot(some_stat)
     + geom_line(aes(x=Date,y=Deaths_To_Confirmed))
     + geom_point(data=some_last_stat,

@@ -24,8 +24,8 @@ area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
     ##   priority_hosp_area = col_character(),
     ##   edrpou_hosp = col_character(),
     ##   legal_entity_name_hosp = col_character(),
-    ##   legal_entity_lat = col_double(),
-    ##   legal_entity_lng = col_double(),
+    ##   legal_entity_lat = col_number(),
+    ##   legal_entity_lng = col_number(),
     ##   person_gender = col_character(),
     ##   person_age_group = col_character(),
     ##   add_conditions = col_character(),
@@ -36,16 +36,6 @@ area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
     ##   new_death = col_double(),
     ##   new_recover = col_double()
     ## )
-
-    ## Warning: 86 parsing failures.
-    ##  row              col               expected  actual                                        file
-    ## 1300 legal_entity_lat no trailing characters ,006038 '../covid19_by_area_type_hosp_dynamics.csv'
-    ## 1300 legal_entity_lng no trailing characters ,655758 '../covid19_by_area_type_hosp_dynamics.csv'
-    ## 1392 legal_entity_lat no trailing characters ,604941 '../covid19_by_area_type_hosp_dynamics.csv'
-    ## 1392 legal_entity_lng no trailing characters ,271351 '../covid19_by_area_type_hosp_dynamics.csv'
-    ## 3283 legal_entity_lat no trailing characters ,604941 '../covid19_by_area_type_hosp_dynamics.csv'
-    ## .... ................ ...................... ....... ...........................................
-    ## See problems(...) for more details.
 
 ``` r
 daily_area_dyn <- area_dyn %>%
@@ -74,9 +64,23 @@ tsdiag(fit.new_confirm)
 <img src="fig_forecast_arima/unnamed-chunk-4-1.png" width="672" />
 
 ``` r
-predict <- predict(fit.new_confirm, 7)
+predict_confirm <- predict(fit.new_confirm, 7)
 
-#plot(predict)
+predict_confirm
 ```
+
+    ## $pred
+    ## Time Series:
+    ## Start = c(11, 6) 
+    ## End = c(12, 5) 
+    ## Frequency = 7 
+    ## [1] 378.5883 385.9595 393.1153 398.7948 402.7914 405.5221 407.3514
+    ## 
+    ## $se
+    ## Time Series:
+    ## Start = c(11, 6) 
+    ## End = c(12, 5) 
+    ## Frequency = 7 
+    ## [1]  92.9561 115.3408 126.8086 131.7914 134.0259 135.0051 135.4350
 
 [Повернутись на головну](index.html) або [повідомити про помилку]((https://github.com/vityok/covid19_ua/issues))
