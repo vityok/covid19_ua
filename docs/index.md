@@ -15,6 +15,7 @@
  - [Динаміка поширення коронавірусної інфекції по областях](regions_dyn.html)
  - [Гістограми](histograms.html) (в роботі)
  - [Прогнозування](forecast.html) (в роботі)
+ - [Розклад часових рядів](decompose.html)
 
 Та матеріали:
  - [Як працювати з даними CSSE Johns Hopkins](reading_csse_ts.html) (в роботі)
