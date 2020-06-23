@@ -245,7 +245,7 @@ latest <- max(area_first$zvit_date)
 ```
 
 [Повернутись на головну](index.html) або [повідомити про
-помилку]((https://github.com/vityok/covid19_ua/issues))
+помилку](https://github.com/vityok/covid19_ua/issues)
 
 [wiki.R]: https://uk.wikipedia.org/w/index.php?title=R_(%D0%BC%D0%BE%D0%B2%D0%B0_%D0%BF%D1%80%D0%BE%D0%B3%D1%80%D0%B0%D0%BC%D1%83%D0%B2%D0%B0%D0%BD%D0%BD%D1%8F)&oldid=28060661
 

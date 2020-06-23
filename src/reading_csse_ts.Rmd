@@ -394,4 +394,4 @@ sum(last_stat$Deaths)/sum(last_stat$Confirmed)
 ```
 
 [Повернутись на головну](index.html) або [повідомити про
-помилку]((https://github.com/vityok/covid19_ua/issues))
+помилку](https://github.com/vityok/covid19_ua/issues)

@@ -67,8 +67,8 @@ head(df)
     ## # A tibble: 6 x 2
     ##   ds             y
     ##   <date>     <dbl>
-    ## 1 2020-04-02   126
-    ## 2 2020-04-03   149
+    ## 1 2020-04-02   129
+    ## 2 2020-04-03   148
     ## 3 2020-04-04   166
     ## 4 2020-04-05   102
     ## 5 2020-04-06   189
@@ -98,12 +98,12 @@ tail(future)
 ```
 
     ##            ds
-    ## 84 2020-06-24
-    ## 85 2020-06-25
-    ## 86 2020-06-26
-    ## 87 2020-06-27
-    ## 88 2020-06-28
-    ## 89 2020-06-29
+    ## 90 2020-06-30
+    ## 91 2020-07-01
+    ## 92 2020-07-02
+    ## 93 2020-07-03
+    ## 94 2020-07-04
+    ## 95 2020-07-05
 
 As with most modeling procedures in R, we use the generic predict function to get our forecast. The forecast object is a dataframe with a column yhat containing the forecast. It has additional columns for uncertainty intervals and seasonal components.
 
@@ -113,12 +113,12 @@ tail(forecast[c('ds', 'yhat', 'yhat_lower', 'yhat_upper')])
 ```
 
     ##            ds     yhat yhat_lower yhat_upper
-    ## 84 2020-06-24 664.2258   549.6301   775.8536
-    ## 85 2020-06-25 634.9716   523.8433   749.9278
-    ## 86 2020-06-26 636.3249   520.9044   755.0793
-    ## 87 2020-06-27 607.0411   496.4044   717.4947
-    ## 88 2020-06-28 472.4821   357.7790   584.7842
-    ## 89 2020-06-29 531.4734   422.2859   647.9109
+    ## 90 2020-06-30 690.3806   562.6570   815.8319
+    ## 91 2020-07-01 759.9309   632.1227   885.1850
+    ## 92 2020-07-02 731.7619   605.0651   852.5193
+    ## 93 2020-07-03 741.4327   615.5433   866.4643
+    ## 94 2020-07-04 686.1864   565.6935   820.4180
+    ## 95 2020-07-05 557.6894   429.1464   679.2928
 
 You can use the generic plot function to plot the forecast, by passing in the model and the forecast dataframe.
 
@@ -138,4 +138,4 @@ prophet_plot_components(m, forecast)
 
 More details about the options available for each method are available in the docstrings, for example, via `?prophet` or `?fit.prophet`. This documentation is also available in the [reference manual](https://cran.r-project.org/web/packages/prophet/prophet.pdf) on CRAN.
 
-[Повернутись на головну](index.html) або [повідомити про помилку]((https://github.com/vityok/covid19_ua/issues))
+[Повернутись на головну](index.html) або [повідомити про помилку](https://github.com/vityok/covid19_ua/issues)

@@ -15,29 +15,7 @@ library(tidyverse)
 
 ``` r
 area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
-```
 
-    ## Parsed with column specification:
-    ## cols(
-    ##   zvit_date = col_date(format = ""),
-    ##   registration_area = col_character(),
-    ##   priority_hosp_area = col_character(),
-    ##   edrpou_hosp = col_character(),
-    ##   legal_entity_name_hosp = col_character(),
-    ##   legal_entity_lat = col_number(),
-    ##   legal_entity_lng = col_number(),
-    ##   person_gender = col_character(),
-    ##   person_age_group = col_character(),
-    ##   add_conditions = col_character(),
-    ##   is_medical_worker = col_character(),
-    ##   new_susp = col_double(),
-    ##   new_confirm = col_double(),
-    ##   active_confirm = col_double(),
-    ##   new_death = col_double(),
-    ##   new_recover = col_double()
-    ## )
-
-``` r
 daily_area_dyn <- area_dyn %>%
     select(zvit_date, new_susp, new_confirm, new_death) %>%
     group_by(zvit_date) %>%
@@ -48,11 +26,19 @@ daily_area_dyn <- area_dyn %>%
 
 ts.new_confirm <- ts(daily_area_dyn$new_confirm, frequency=7)
 ts.new_susp    <- ts(daily_area_dyn$new_susp, frequency=7)
+```
 
+``` r
 plot(ts.new_confirm)
 ```
 
-<img src="fig_forecast_arima/unnamed-chunk-3-1.png" width="672" />
+<img src="fig_forecast_arima/ts_new_confirm-1.png" width="672" />
+
+``` r
+plot(ts.new_susp)
+```
+
+<img src="fig_forecast_arima/ts_new_susp-1.png" width="672" />
 
 *order*: A specification of the non-seasonal part of the ARIMA model: the three integer components \[(p,d,q)\] are the AR order, the degree of differencing, and the MA order.
 
@@ -71,16 +57,44 @@ predict_confirm
 
     ## $pred
     ## Time Series:
-    ## Start = c(11, 6) 
-    ## End = c(12, 5) 
+    ## Start = c(12, 5) 
+    ## End = c(13, 4) 
     ## Frequency = 7 
-    ## [1] 378.5883 385.9595 393.1153 398.7948 402.7914 405.5221 407.3514
+    ## [1] 375.0655 385.7966 396.0244 404.1602 410.4938 415.4006 419.1990
     ## 
     ## $se
     ## Time Series:
-    ## Start = c(11, 6) 
-    ## End = c(12, 5) 
+    ## Start = c(12, 5) 
+    ## End = c(13, 4) 
     ## Frequency = 7 
-    ## [1]  92.9561 115.3408 126.8086 131.7914 134.0259 135.0051 135.4350
+    ## [1]  97.72029 127.32147 142.83110 151.41799 156.34305 159.22088 160.92010
 
-[Повернутись на головну](index.html) або [повідомити про помилку]((https://github.com/vityok/covid19_ua/issues))
+``` r
+fit.new_susp <- arima(ts.new_susp, order=c(3,0,7))
+
+tsdiag(fit.new_susp)
+```
+
+<img src="fig_forecast_arima/unnamed-chunk-5-1.png" width="672" />
+
+``` r
+predict_susp <- predict(fit.new_susp, 7)
+
+predict_susp
+```
+
+    ## $pred
+    ## Time Series:
+    ## Start = c(12, 5) 
+    ## End = c(13, 4) 
+    ## Frequency = 7 
+    ## [1] 1055.9091 1121.8659 1052.7461 1135.7978 1206.6308  964.2802  810.3121
+    ## 
+    ## $se
+    ## Time Series:
+    ## Start = c(12, 5) 
+    ## End = c(13, 4) 
+    ## Frequency = 7 
+    ## [1] 173.8386 198.4971 201.0111 202.1617 207.5799 208.8873 210.0631
+
+[Повернутись на головну](index.html) або [повідомити про помилку](https://github.com/vityok/covid19_ua/issues)

@@ -56,4 +56,4 @@ plot(hw.new_susp, fc.new_susp)
 
 <img src="fig_forecast_hw/holt-winters_forecast-1.png" width="672" />
 
-[Повернутись на головну](index.html) або [повідомити про помилку]((https://github.com/vityok/covid19_ua/issues))
+[Повернутись на головну](index.html) або [повідомити про помилку](https://github.com/vityok/covid19_ua/issues)

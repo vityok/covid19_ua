@@ -11,7 +11,7 @@ Sys.setlocale(category="LC_ALL",locale="uk_UA.utf8" )
 
 Завантаження бібліотек
 
-```{r}
+```{r, message = FALSE, warning = FALSE}
 library(tidyverse)
 ```
 
@@ -21,7 +21,7 @@ https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/arima
 7 рекомендована для щоденних вимирів та тижневій "природній"
 періодичності.
 
-```{r}
+```{r, message = FALSE, warning = FALSE}
 area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
 
 daily_area_dyn <- area_dyn %>%
@@ -34,8 +34,14 @@ daily_area_dyn <- area_dyn %>%
 
 ts.new_confirm <- ts(daily_area_dyn$new_confirm, frequency=7)
 ts.new_susp    <- ts(daily_area_dyn$new_susp, frequency=7)
+```
 
+```{r ts_new_confirm}
 plot(ts.new_confirm)
+```
+
+```{r ts_new_susp}
+plot(ts.new_susp)
 ```
 
 *order*: A specification of the non-seasonal part of the ARIMA model:
@@ -51,5 +57,15 @@ predict_confirm <- predict(fit.new_confirm, 7)
 predict_confirm
 ```
 
+```{r}
+fit.new_susp <- arima(ts.new_susp, order=c(3,0,7))
+
+tsdiag(fit.new_susp)
+
+predict_susp <- predict(fit.new_susp, 7)
+
+predict_susp
+```
+
 [Повернутись на головну](index.html) або [повідомити про
-помилку]((https://github.com/vityok/covid19_ua/issues))
+помилку](https://github.com/vityok/covid19_ua/issues)

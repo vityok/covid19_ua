@@ -154,4 +154,4 @@ kyiv.new <- kyiv.ts %>%
 
 <img src="fig_forecast_fable/kyiv_new_forecast-1.png" width="672" />
 
-[Повернутись на головну](index.html) або [повідомити про помилку]((https://github.com/vityok/covid19_ua/issues))
+[Повернутись на головну](index.html) або [повідомити про помилку](https://github.com/vityok/covid19_ua/issues)

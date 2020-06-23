@@ -39,13 +39,12 @@ knitr::opts_chunk$set(fig.retina=2, fig.path = "fig_decompose/")
 Інший метод побудови, лінії різного кольору.
 
 ```{r}
-Sys.setlocale(category="LC_ALL",locale="uk_UA.utf8" )
 library(tidyverse)
 library(tsibble)
 library(feasts)
 ```
 
-```{r}
+```{r, warning = FALSE, message = FALSE}
 area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
 
 daily_area_dyn <- area_dyn %>%
@@ -54,13 +53,15 @@ daily_area_dyn <- area_dyn %>%
     summarise(new_susp = sum(new_susp),
               new_confirm = sum(new_confirm),
               new_death = sum(new_death),
-              active_confirm = sum(active_confirm))
+              active_confirm = sum(active_confirm)) %>%
+    mutate(susp_confirm_ratio = new_confirm / new_susp)
 
 daily_area_dyn <- daily_area_dyn %>%
     mutate(Cdate = as.Date(strptime(zvit_date, "%Y-%m-%d")))
 
-## collapse several columns into a single column "value" (key-value
-## pair) factored by the column named "variable"
+## зібрати дані з декількох стовпчиків у новий стовпчик з назвою
+## "value" (пара ключ-значення), а стара назва стовпчика буде
+## збережена у стовпчику "variable"
 daily_area_gath <- daily_area_dyn %>%
     select(Cdate, new_susp, new_confirm, new_death, active_confirm) %>%
     pivot_longer(-Cdate, names_to = "variable", values_to = "value")
@@ -92,6 +93,15 @@ daily_area_gath <- daily_area_dyn %>%
 (ggplot(daily_area_dyn, aes(x=Cdate,y=new_death))
     + geom_point()
     + geom_line()
+    + theme_light())
+```
+
+Співвідношення кількості підтверджених випадків до кількості підозр.
+
+```{r ratio}
+(ggplot(daily_area_dyn, aes(zvit_date, new_confirm/new_susp))
+    + geom_line()
+    + geom_smooth(se = FALSE)
     + theme_light())
 ```
 
@@ -159,7 +169,7 @@ daily_area_dyn_ma %>%
 - сезонні відхилення
 - випадкові коливання (шум)
 
-```{r classical_new_confirm}
+```{r classical_new_confirm, warning = FALSE}
 daily_area_dyn_ma %>%
   model(classical_decomposition(new_confirm, type = "additive")) %>%
   components() %>%
@@ -167,7 +177,30 @@ daily_area_dyn_ma %>%
   ggtitle("Класичний адитивний розклад нових підтверджених захворювань")
 ```
 
+```{r classical_new_susp, warning = FALSE}
+daily_area_dyn_ma %>%
+  model(classical_decomposition(new_susp, type = "additive")) %>%
+  components() %>%
+  autoplot() + xlab("") +
+  ggtitle("Класичний адитивний розклад нових підозр")
+```
+
+```{r classical_new_ratio, warning = FALSE}
+daily_area_dyn_ma %>%
+  model(classical_decomposition(susp_confirm_ratio, type = "additive")) %>%
+  components() %>%
+  autoplot() + xlab("") +
+  ggtitle("Класичний адитивний розклад нових підозр")
+```
+
 ## Методом X11
+
+На жаль метод X11 придатний для оброблення часових рядів,
+періодичність яких місячна (параметр `period` дорівнює 12) або
+квартальна (параметр `period` дорівнює 4).
+
+Оскільки часові ряди для захворюваності мають добовий крок, то
+параметр `period` для них становить 7.
 
 ```
 [1] The X11 method only supports monthly (`period = 12`) and quarterly (`period = 4`) seasonal patterns
@@ -175,10 +208,9 @@ daily_area_dyn_ma %>%
 
 ## SEATS
 
-<!-- ```{r} -->
-<!-- seats_dcmp <- daily_area_dyn_ma %>% -->
-<!--   model(seats = feasts:::SEATS(new_confirm)) %>% -->
-<!--   components() -->
+<!-- ```{r} --> <!-- seats_dcmp <- daily_area_dyn_ma %>% --> <!--
+model(seats = feasts:::SEATS(new_confirm)) %>% --> <!-- components()
+-->
 
 <!-- autoplot(seats_dcmp) + xlab("Year") + -->
 <!--   ggtitle("SEATS decomposition of total US retail employment") -->
@@ -201,6 +233,15 @@ stl_dcmp <- daily_area_dyn_ma %>%
     components()
 
 autoplot(stl_dcmp)
+```
+
+Розклад часового ряду для зареєстрованих підозр:
+
+```{r stl_susp}
+autoplot(daily_area_dyn_ma %>%
+         model(STL(new_susp ~ trend(window=7) + season(window='periodic'),
+                   robust = TRUE)) %>%
+         components())
 ```
 
 # Прогнозування з декомпозицією
@@ -234,4 +275,4 @@ fit_dcmp_active %>%
 ```
 
 [Повернутись на головну](index.html) або [повідомити про
-помилку]((https://github.com/vityok/covid19_ua/issues))
+помилку](https://github.com/vityok/covid19_ua/issues)

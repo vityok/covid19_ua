@@ -93,4 +93,4 @@ manual](https://cran.r-project.org/web/packages/prophet/prophet.pdf)
 on CRAN.
 
 [Повернутись на головну](index.html) або [повідомити про
-помилку]((https://github.com/vityok/covid19_ua/issues))
+помилку](https://github.com/vityok/covid19_ua/issues)

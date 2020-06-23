@@ -21,12 +21,6 @@
 Інший метод побудови, лінії різного кольору.
 
 ``` r
-Sys.setlocale(category="LC_ALL",locale="uk_UA.utf8" )
-```
-
-    ## [1] "LC_CTYPE=uk_UA.utf8;LC_NUMERIC=C;LC_TIME=uk_UA.utf8;LC_COLLATE=uk_UA.utf8;LC_MONETARY=uk_UA.utf8;LC_MESSAGES=en_US.UTF-8;LC_PAPER=en_US.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_US.UTF-8;LC_IDENTIFICATION=C"
-
-``` r
 library(tidyverse)
 library(tsibble)
 library(feasts)
@@ -34,42 +28,22 @@ library(feasts)
 
 ``` r
 area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
-```
 
-    ## Parsed with column specification:
-    ## cols(
-    ##   zvit_date = col_date(format = ""),
-    ##   registration_area = col_character(),
-    ##   priority_hosp_area = col_character(),
-    ##   edrpou_hosp = col_character(),
-    ##   legal_entity_name_hosp = col_character(),
-    ##   legal_entity_lat = col_number(),
-    ##   legal_entity_lng = col_number(),
-    ##   person_gender = col_character(),
-    ##   person_age_group = col_character(),
-    ##   add_conditions = col_character(),
-    ##   is_medical_worker = col_character(),
-    ##   new_susp = col_double(),
-    ##   new_confirm = col_double(),
-    ##   active_confirm = col_double(),
-    ##   new_death = col_double(),
-    ##   new_recover = col_double()
-    ## )
-
-``` r
 daily_area_dyn <- area_dyn %>%
     select(zvit_date, new_susp, new_confirm, new_death, active_confirm) %>%
     group_by(zvit_date) %>%
     summarise(new_susp = sum(new_susp),
               new_confirm = sum(new_confirm),
               new_death = sum(new_death),
-              active_confirm = sum(active_confirm))
+              active_confirm = sum(active_confirm)) %>%
+    mutate(susp_confirm_ratio = new_confirm / new_susp)
 
 daily_area_dyn <- daily_area_dyn %>%
     mutate(Cdate = as.Date(strptime(zvit_date, "%Y-%m-%d")))
 
-## collapse several columns into a single column "value" (key-value
-## pair) factored by the column named "variable"
+## зібрати дані з декількох стовпчиків у новий стовпчик з назвою
+## "value" (пара ключ-значення), а стара назва стовпчика буде
+## збережена у стовпчику "variable"
 daily_area_gath <- daily_area_dyn %>%
     select(Cdate, new_susp, new_confirm, new_death, active_confirm) %>%
     pivot_longer(-Cdate, names_to = "variable", values_to = "value")
@@ -113,6 +87,19 @@ daily_area_gath <- daily_area_dyn %>%
 ```
 
 <img src="fig_decompose/daily_ukraine_chart_death-1.png" width="864" />
+
+Співвідношення кількості підтверджених випадків до кількості підозр.
+
+``` r
+(ggplot(daily_area_dyn, aes(zvit_date, new_confirm/new_susp))
+    + geom_line()
+    + geom_smooth(se = FALSE)
+    + theme_light())
+```
+
+    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
+
+<img src="fig_decompose/ratio-1.png" width="672" />
 
 Ковзне середнє
 ==============
@@ -201,12 +188,34 @@ daily_area_dyn_ma %>%
   ggtitle("Класичний адитивний розклад нових підтверджених захворювань")
 ```
 
-    ## Warning: Removed 3 row(s) containing missing values (geom_path).
-
 <img src="fig_decompose/classical_new_confirm-1.png" width="672" />
+
+``` r
+daily_area_dyn_ma %>%
+  model(classical_decomposition(new_susp, type = "additive")) %>%
+  components() %>%
+  autoplot() + xlab("") +
+  ggtitle("Класичний адитивний розклад нових підозр")
+```
+
+<img src="fig_decompose/classical_new_susp-1.png" width="672" />
+
+``` r
+daily_area_dyn_ma %>%
+  model(classical_decomposition(susp_confirm_ratio, type = "additive")) %>%
+  components() %>%
+  autoplot() + xlab("") +
+  ggtitle("Класичний адитивний розклад нових підозр")
+```
+
+<img src="fig_decompose/classical_new_ratio-1.png" width="672" />
 
 Методом X11
 -----------
+
+На жаль метод X11 придатний для оброблення часових рядів, періодичність яких місячна (параметр `period` дорівнює 12) або квартальна (параметр `period` дорівнює 4).
+
+Оскільки часові ряди для захворюваності мають добовий крок, то параметр `period` для них становить 7.
 
     [1] The X11 method only supports monthly (`period = 12`) and quarterly (`period = 4`) seasonal patterns
 
@@ -215,8 +224,10 @@ SEATS
 
 <!-- ```{r} -->
 <!-- seats_dcmp <- daily_area_dyn_ma %>% -->
-<!--   model(seats = feasts:::SEATS(new_confirm)) %>% -->
-<!--   components() -->
+<!--
+model(seats = feasts:::SEATS(new_confirm)) %>% -->
+<!-- components()
+-->
 <!-- autoplot(seats_dcmp) + xlab("Year") + -->
 <!--   ggtitle("SEATS decomposition of total US retail employment") -->
 <!-- ``` -->
@@ -237,6 +248,17 @@ autoplot(stl_dcmp)
 ```
 
 <img src="fig_decompose/stl_new_confirm-1.png" width="672" />
+
+Розклад часового ряду для зареєстрованих підозр:
+
+``` r
+autoplot(daily_area_dyn_ma %>%
+         model(STL(new_susp ~ trend(window=7) + season(window='periodic'),
+                   robust = TRUE)) %>%
+         components())
+```
+
+<img src="fig_decompose/stl_susp-1.png" width="672" />
 
 Прогнозування з декомпозицією
 =============================
@@ -275,4 +297,4 @@ fit_dcmp_active %>%
 
 <img src="fig_decompose/forecast_fit_dcmp_active-1.png" width="672" />
 
-[Повернутись на головну](index.html) або [повідомити про помилку]((https://github.com/vityok/covid19_ua/issues))
+[Повернутись на головну](index.html) або [повідомити про помилку](https://github.com/vityok/covid19_ua/issues)
