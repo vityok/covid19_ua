@@ -21,13 +21,16 @@
 Інший метод побудови, лінії різного кольору.
 
 ``` r
-library(tidyverse)
+library(fpp3)
+library(fable)
 library(tsibble)
 library(feasts)
+library(tidyverse)
 ```
 
 ``` r
-area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
+## area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
+area_dyn <- read_csv('https://raw.github.com/VasiaPiven/covid19_ua/master/covid19_by_area_type_hosp_dynamics.csv')
 
 daily_area_dyn <- area_dyn %>%
     select(zvit_date, new_susp, new_confirm, new_death, active_confirm) %>%
@@ -296,5 +299,14 @@ fit_dcmp_active %>%
 ```
 
 <img src="fig_decompose/forecast_fit_dcmp_active-1.png" width="672" />
+
+Декомпозиція ggseas
+===================
+
+todo: <https://github.com/ellisp/ggseas>
+
+``` r
+library(ggseas)
+```
 
 [Повернутись на головну](index.html) або [повідомити про помилку](https://github.com/vityok/covid19_ua/issues)

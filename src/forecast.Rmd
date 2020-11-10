@@ -17,6 +17,10 @@ library(fable)
 library(tsibble)
 library(feasts)
 
+## Темні кольорові теми для ggplot2, більше варіантів використання:
+## https://github.com/nsgrantham/ggdark
+library(ggdark)
+
 area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
 
 daily_area_dyn <- area_dyn %>%
@@ -34,10 +38,15 @@ tle.dyn <- tail(tle.dyn, 60)
 ```
 
 ```{r, echo = FALSE, message = FALSE}
-ggplot(tle.dyn, aes(zvit_date, new_confirm)) +
+ggplot(tle.dyn, aes(x=zvit_date, y=new_confirm)) +
     geom_point() +
     geom_smooth(method='lm', se = FALSE) +
-    theme_light()
+    dark_theme_light() +
+    labs(title="Підтверджених випадків за добу",
+         subtitle="Та лінійна модель",
+         x = "",
+         y = "",
+         caption = "Дані: ЦГЗ та НСЗУ")
 ```
 
 ```{r, echo = FALSE, message = FALSE, warning = FALSE}
@@ -53,9 +62,14 @@ ap <- tail(tle.dyn,14) %>%
 
 ```{r, echo = FALSE, message = FALSE}
 (ap
-    + geom_smooth(method='glm', fullrange = TRUE, se = FALSE)
-    + theme_light()
-    + theme(legend.position = "bottom"))
+#    + geom_smooth(method='glm', fullrange = TRUE, se = FALSE)
+    + dark_theme_light()
+    + theme(legend.position = "bottom")
+    + labs(title="Підтверджених випадків за добу",
+           subtitle="Та моделі з прогнозом на два тижні",
+           x = "",
+           y = "",
+           caption = "Дані: ЦГЗ та НСЗУ"))
 
 ```
 

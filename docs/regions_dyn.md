@@ -17,6 +17,7 @@
 ``` r
 library(tidyverse)
 library(ggridges)
+library(slider)
 ```
 
 Якщо системні налаштування локалі не співпадають з бажаними, їх можна змінити навіть тоді, коли сеанс роботи в R розпочато, для цього знадобиться функція [`Sys.setlocale`](https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/locales):
@@ -27,29 +28,17 @@ Sys.setlocale(category="LC_ALL",locale="uk_UA.utf8" )
 
 Тепер вже можна починати роботу. Зчитаємо із використанням функції [`read_csv`](https://readr.tidyverse.org/reference/read_delim.html) бібліотеки `tidyverse` а не стандартної `read.csv`. Таким чином отримаємо дані одразу в структурі даних, зручній для подальшої роботи.
 
+Як джерело даних можна вказати файл у локальній файловій системі:
+
 ``` r
 area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
 ```
 
-    ## Parsed with column specification:
-    ## cols(
-    ##   zvit_date = col_date(format = ""),
-    ##   registration_area = col_character(),
-    ##   priority_hosp_area = col_character(),
-    ##   edrpou_hosp = col_character(),
-    ##   legal_entity_name_hosp = col_character(),
-    ##   legal_entity_lat = col_number(),
-    ##   legal_entity_lng = col_number(),
-    ##   person_gender = col_character(),
-    ##   person_age_group = col_character(),
-    ##   add_conditions = col_character(),
-    ##   is_medical_worker = col_character(),
-    ##   new_susp = col_double(),
-    ##   new_confirm = col_double(),
-    ##   active_confirm = col_double(),
-    ##   new_death = col_double(),
-    ##   new_recover = col_double()
-    ## )
+Або ж завантажити найсвіжішу копію безпосередньо з серверів GitHub:
+
+``` r
+area_dyn <- read_csv('https://raw.github.com/VasiaPiven/covid19_ua/master/covid19_by_area_type_hosp_dynamics.csv')
+```
 
 Функція `read_csv`, окрім власне зчитування самої таблиці, іще й намагається правильно визначити типи даних, що зберігаються в кожному зі ствопчиків. І хоча розробники радять вказувати типи даних для кожного стовпчика явним чином, в нашому випадку це може бути зайвим, адже функція вірно визначає всі типи даних, навіть [`Date`](https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/Dates) для стовпчика `zvit_date`.
 
@@ -57,23 +46,31 @@ area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
 head(area_dyn)
 ```
 
-    ## # A tibble: 6 x 16
-    ##   zvit_date  registration_ar… priority_hosp_a… edrpou_hosp legal_entity_na…
-    ##   <date>     <chr>            <chr>            <chr>       <chr>           
-    ## 1 2020-06-21 Вінницька        Вінницька        01982494    КНП БЕРШАДСЬКА …
-    ## 2 2020-06-21 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
-    ## 3 2020-06-21 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
-    ## 4 2020-06-21 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
-    ## 5 2020-06-21 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
-    ## 6 2020-06-21 Вінницька        Вінницька        01982502    КНП ВІННИЦЬКА Ц…
-    ## # … with 11 more variables: legal_entity_lat <dbl>, legal_entity_lng <dbl>,
-    ## #   person_gender <chr>, person_age_group <chr>, add_conditions <chr>,
-    ## #   is_medical_worker <chr>, new_susp <dbl>, new_confirm <dbl>,
-    ## #   active_confirm <dbl>, new_death <dbl>, new_recover <dbl>
+    ## # A tibble: 6 x 12
+    ##   zvit_date  registration_ar… is_required_hos… person_gender person_age_group
+    ##   <date>     <chr>            <chr>            <chr>         <chr>           
+    ## 1 2020-11-08 Вінницька        Ні               Жіноча        0-9             
+    ## 2 2020-11-08 Вінницька        Ні               Жіноча        10-19           
+    ## 3 2020-11-08 Вінницька        Ні               Жіноча        10-19           
+    ## 4 2020-11-08 Вінницька        Ні               Жіноча        10-19           
+    ## 5 2020-11-08 Вінницька        Ні               Жіноча        20-29           
+    ## 6 2020-11-08 Вінницька        Ні               Жіноча        20-29           
+    ## # … with 7 more variables: add_conditions <chr>, is_medical_worker <chr>,
+    ## #   new_susp <dbl>, new_confirm <dbl>, active_confirm <dbl>, new_death <dbl>,
+    ## #   new_recover <dbl>
 
 Таблиця в файлі `covid19_by_area_type_hosp_dynamics.csv` має доволі велику кількість стовпчиків, перелічемо їх для зручності подальшого використання в скрипті:
 
-zvit\_date, registration\_area, priority\_hosp\_area, edrpou\_hosp, legal\_entity\_name\_hosp, legal\_entity\_lat, legal\_entity\_lng, person\_gender, person\_age\_group, add\_conditions, is\_medical\_worker, new\_susp, new\_confirm, active\_confirm, new\_death, new\_recover.
+``` r
+names(area_dyn)
+```
+
+    ##  [1] "zvit_date"                   "registration_area"          
+    ##  [3] "is_required_hospitalization" "person_gender"              
+    ##  [5] "person_age_group"            "add_conditions"             
+    ##  [7] "is_medical_worker"           "new_susp"                   
+    ##  [9] "new_confirm"                 "active_confirm"             
+    ## [11] "new_death"                   "new_recover"
 
 Зараз нам цікаві лише кілька:
 
@@ -87,17 +84,126 @@ zvit\_date, registration\_area, priority\_hosp\_area, edrpou\_hosp, legal\_entit
 
 ``` r
 daily_area_reg_dyn <- area_dyn %>%
-    select(zvit_date, priority_hosp_area, new_susp, new_confirm, new_death) %>%
+    select(zvit_date, registration_area, new_susp, new_confirm, new_death) %>%
     mutate(registration_area=factor(case_when(
-               priority_hosp_area == "м. Київ" ~ "м. Київ",
-               TRUE ~ stringr::str_to_title(priority_hosp_area)))) %>%
+               registration_area == "м. Київ" ~ "м. Київ",
+               TRUE ~ stringr::str_to_title(registration_area)))) %>%
     group_by(zvit_date, registration_area) %>%
     summarise(new_susp = sum(new_susp),
               new_confirm = sum(new_confirm),
               new_death = sum(new_death))
 ```
 
+    ## `summarise()` regrouping output by 'zvit_date' (override with `.groups` argument)
+
 Нарешті, все готово для створення графіка.
+
+Огляд
+-----
+
+Та почнемо з побудови узагальнених даних для всієї країни. Для цього також знадобиться підрахунок сум, але в розрізі лише дат, без урахування регіонів:
+
+``` r
+daily_sum_dyn <- daily_area_reg_dyn %>%
+    group_by(zvit_date) %>%
+    summarise(new_susp = sum(new_susp),
+              new_confirm = sum(new_confirm),
+              new_death = sum(new_death)) %>%
+    filter(zvit_date > as.Date('2020-04-01'))
+```
+
+    ## `summarise()` ungrouping output (override with `.groups` argument)
+
+``` r
+ggplot(daily_sum_dyn) +
+    geom_line(aes(zvit_date, new_susp, colour='orange')) +
+    geom_line(aes(zvit_date, new_confirm, colour='blue')) +
+    geom_line(aes(zvit_date, new_death, colour='red')) +
+    scale_color_discrete(name="",
+                         labels=c("Підтверджені",
+                                  "Підозри",
+                                  "Летальні")) +
+    theme_light() +
+    theme(legend.position = "bottom") +
+    labs(title="Загальний огляд перебігу епідемії COVID-19",
+         x = "Дата",
+         y = "Випадків за день",
+         caption = "Дані: ЦГЗ та НСЗУ")
+```
+
+<img src="fig_regions_dyn/ukraine_dyn-1.png" width="672" />
+
+Зробімо іще одне невеличке дослідження: зобразимо нормалізовані значення цих показників на гафіку.
+
+``` r
+max_susp <- max(daily_sum_dyn$new_susp)
+max_confirm <- max(daily_sum_dyn$new_confirm)
+max_death <- max(daily_sum_dyn$new_death)
+
+daily_norm_dyn <- daily_sum_dyn %>%
+    mutate(new_susp = new_susp / max_susp,
+           new_confirm = new_confirm / max_confirm,
+           new_death = new_death / max_death) %>%
+    mutate(new_susp_7ma = slide_dbl(new_susp, mean, .size = 7, .align = "center"),
+           new_confirm_7ma = slide_dbl(new_confirm, mean, .size = 7, .align = "center"),
+           new_death_7ma = slide_dbl(new_death, mean, .size = 7, .align = "center"))
+```
+
+``` r
+library(gridExtra)
+```
+
+    ## 
+    ## Attaching package: 'gridExtra'
+
+    ## The following object is masked from 'package:dplyr':
+    ## 
+    ##     combine
+
+``` r
+library(grid)
+
+daily_norm_dyn_confirm_death <- daily_norm_dyn %>%
+    select(zvit_date, new_confirm_7ma, new_death_7ma) %>%
+    pivot_longer(cols=contains('new_'),
+                 names_to='metric',
+                 values_to='val')
+
+daily_norm_dyn_confirm_susp <- daily_norm_dyn %>%
+    select(zvit_date, new_confirm_7ma, new_susp_7ma) %>%
+    pivot_longer(cols=contains('new_'),
+                 names_to='metric',
+                 values_to='val')
+
+breaks_metric <- c('new_confirm_7ma', 'new_susp_7ma', 'new_death_7ma')
+labels_metric <- c('Підтверджених', 'Підозр', 'Летальних')
+
+confirm_death_plot <- ggplot(daily_norm_dyn_confirm_death, aes(zvit_date, val)) +
+    geom_line(aes(color = metric)) +
+    theme_light() +
+    scale_color_discrete(breaks=breaks_metric, labels=labels_metric) +
+    theme(legend.position = "bottom") +
+    labs(title="Підтверджених та летальних",
+         x = "",
+         y = "Випадків за день",
+         caption = "")
+
+confirm_susp_plot <- ggplot(daily_norm_dyn_confirm_susp, aes(zvit_date, val)) +
+    geom_line(aes(color = metric)) +
+    theme_light() +
+    scale_color_discrete(breaks=breaks_metric, labels=labels_metric) +
+    theme(legend.position = "bottom") +
+    labs(title="Підозр та підтверджених",
+         x = "Дата",
+         y = "Випадків за день",
+         caption = "Значення показників нормалізовано за максимальним. Дані: ЦГЗ та НСЗУ")
+
+
+
+grid.arrange(confirm_death_plot, confirm_susp_plot, ncol = 1)
+```
+
+<img src="fig_regions_dyn/unnamed-chunk-11-1.png" width="672" />
 
 Підозри на захворювання COVID-19
 --------------------------------
@@ -112,7 +218,7 @@ daily_area_reg_dyn <- area_dyn %>%
 plot_susp <- ggplot(daily_area_reg_dyn, aes(x=zvit_date, y=new_susp))
 ```
 
-Далі до графіка слід додати визначення графічних об'єктів, що будуть на ньому зображено:
+Далі до графіка слід додати визначення графічних об'єктів, що будуть на ньому зображені, в нашому випадку, це `geom_line`:
 
 ``` r
 plot_susp <- plot_susp + geom_line()
@@ -210,7 +316,11 @@ area_first <- area_dyn %>%
     group_by(registration_area) %>%
     summarise(zvit_date=min(zvit_date),
               new_confirm=sum(new_confirm))
+```
 
+    ## `summarise()` ungrouping output (override with `.groups` argument)
+
+``` r
 latest <- max(area_first$zvit_date)
 ```
 

@@ -37,7 +37,7 @@ library(tidyverse)
 
 Хоча стовпчик «Дата» может бути не завжди потрібен.
 
-Зчитування даних про кількість підтверджених випадків.
+Зчитати дані про кількість підтверджених випадків можна або з копії репозиторію на локальній файловій системі:
 
 ``` r
 confirmed_global_csv <- read_csv('../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv')
@@ -52,40 +52,42 @@ confirmed_global_csv <- read_csv('../../COVID-19/csse_covid_19_data/csse_covid_1
 
     ## See spec(...) for full column specifications.
 
+Або ж безпосередньо з серверу GitHub завантажити найсвіжішу версію:
+
+``` r
+confirmed_global_csv <- read_csv('https://raw.github.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv')
+```
+
+    ## Parsed with column specification:
+    ## cols(
+    ##   .default = col_double(),
+    ##   `Province/State` = col_character(),
+    ##   `Country/Region` = col_character()
+    ## )
+
+    ## See spec(...) for full column specifications.
+
+Починаємо перетворення структури таблиці:
+
 ``` r
 confirmed_global <- confirmed_global_csv %>%
     pivot_longer(cols=contains("/20"), names_to="Date", values_to="Confirmed") %>%
-    mutate(Date=as.Date(Date,format='%m/%d/%Y'))
+    mutate(Date=as.Date(Date,format='%m/%d/%y'))
 
 confirmed_global_sum <- confirmed_global %>%
     select(Country = `Country/Region`, Confirmed, Date) %>%
     group_by(Country, Date) %>%
     summarise(Confirmed = sum(Confirmed))
-
-head(confirmed_global_sum)
 ```
 
-    ## # A tibble: 6 x 3
-    ## # Groups:   Country [1]
-    ##   Country     Date       Confirmed
-    ##   <chr>       <date>         <dbl>
-    ## 1 Afghanistan 20-01-22           0
-    ## 2 Afghanistan 20-01-23           0
-    ## 3 Afghanistan 20-01-24           0
-    ## 4 Afghanistan 20-01-25           0
-    ## 5 Afghanistan 20-01-26           0
-    ## 6 Afghanistan 20-01-27           0
-
-``` r
-length(confirmed_global_sum$Confirmed)
-```
-
-    ## [1] 28764
+    ## `summarise()` regrouping output by 'Country' (override with `.groups` argument)
 
 Зчитування даних про кількість летальних випадків.
 
 ``` r
-deaths_global_csv <- read_csv('../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv')
+## deaths_global_csv <- read_csv('../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv')
+
+deaths_global_csv <- read_csv('https://raw.github.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv')
 ```
 
     ## Parsed with column specification:
@@ -100,7 +102,7 @@ deaths_global_csv <- read_csv('../../COVID-19/csse_covid_19_data/csse_covid_19_t
 ``` r
 deaths_global <- deaths_global_csv %>%
     pivot_longer(cols=contains("/20"), names_to="Date", values_to="Deaths") %>%
-    mutate(Date=as.Date(Date,format='%m/%d/%Y'))
+    mutate(Date=as.Date(Date,format='%m/%d/%y'))
 
 deaths_global_sum <- deaths_global %>%
     select(Country = `Country/Region`, Deaths, Date) %>%
@@ -108,10 +110,14 @@ deaths_global_sum <- deaths_global %>%
     summarise(Deaths = sum(Deaths))
 ```
 
+    ## `summarise()` regrouping output by 'Country' (override with `.groups` argument)
+
 Зчитування даних про кількість тих, хто одужав.
 
 ``` r
-recovered_global_csv <- read_csv('../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv')
+## recovered_global_csv <- read_csv('../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv')
+
+recovered_global_csv <- read_csv('https://raw.github.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv')
 ```
 
     ## Parsed with column specification:
@@ -126,7 +132,7 @@ recovered_global_csv <- read_csv('../../COVID-19/csse_covid_19_data/csse_covid_1
 ``` r
 recovered_global <- recovered_global_csv %>%
     pivot_longer(cols=contains("/20"), names_to="Date", values_to="Recovered") %>%
-    mutate(Date=as.Date(Date,format='%m/%d/%Y'))
+    mutate(Date=as.Date(Date,format='%m/%d/%y'))
 
 recovered_global_sum <- recovered_global %>%
     select(Country = `Country/Region`, Recovered, Date) %>%
@@ -134,32 +140,15 @@ recovered_global_sum <- recovered_global %>%
     summarise(Recovered = sum(Recovered))
 ```
 
+    ## `summarise()` regrouping output by 'Country' (override with `.groups` argument)
+
 Об'єднаємо три набори даних в один:
 
 ``` r
 all_sum_raw <- deaths_global_sum %>%
     full_join(confirmed_global_sum, by=c('Country', 'Date')) %>%
     full_join(recovered_global_sum, by=c('Country', 'Date'))
-
-head(all_sum_raw)
 ```
-
-    ## # A tibble: 6 x 5
-    ## # Groups:   Country [1]
-    ##   Country     Date       Deaths Confirmed Recovered
-    ##   <chr>       <date>      <dbl>     <dbl>     <dbl>
-    ## 1 Afghanistan 20-01-22        0         0         0
-    ## 2 Afghanistan 20-01-23        0         0         0
-    ## 3 Afghanistan 20-01-24        0         0         0
-    ## 4 Afghanistan 20-01-25        0         0         0
-    ## 5 Afghanistan 20-01-26        0         0         0
-    ## 6 Afghanistan 20-01-27        0         0         0
-
-``` r
-length(all_sum_raw$Country)
-```
-
-    ## [1] 28764
 
 Обчислимо співвідношення:
 
@@ -180,52 +169,24 @@ all_stat <- all_sum_raw %>%
                / Confirmed)) %>%
     ungroup() %>%
     mutate(Country = factor(Country))
-
-str(all_stat)
 ```
 
-    ## tibble [28,764 × 10] (S3: tbl_df/tbl/data.frame)
-    ##  $ Country               : Factor w/ 188 levels "Afghanistan",..: 1 1 1 1 1 1 1 1 1 1 ...
-    ##  $ Date                  : Date[1:28764], format: "20-01-22" "20-01-23" ...
-    ##  $ Deaths                : num [1:28764] 0 0 0 0 0 0 0 0 0 0 ...
-    ##  $ Confirmed             : num [1:28764] 0 0 0 0 0 0 0 0 0 0 ...
-    ##  $ Recovered             : num [1:28764] 0 0 0 0 0 0 0 0 0 0 ...
-    ##  $ Deaths_To_Recovered   : num [1:28764] 0 0 0 0 0 0 0 0 0 0 ...
-    ##  $ Deaths_To_Confirmed   : num [1:28764] 0 0 0 0 0 0 0 0 0 0 ...
-    ##  $ Recovered_To_Confirmed: num [1:28764] NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN ...
-    ##  $ Recovered_To_Deaths   : num [1:28764] 0 0 0 0 0 0 0 0 0 0 ...
-    ##  $ Active_To_Confirmed   : num [1:28764] NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN ...
-
-Останній запис в таблиці:
+Обчислюємо максимальну дату та знаходимо найсвіжіші дані:
 
 ``` r
 last_stat <- all_stat[all_stat$Date == max(all_stat$Date), ]
-
-str(last_stat)
+last_report_date <- strftime(last_stat$Date[1], format="%x")
 ```
 
-    ## tibble [188 × 10] (S3: tbl_df/tbl/data.frame)
-    ##  $ Country               : Factor w/ 188 levels "Afghanistan",..: 1 2 3 4 5 6 7 8 9 10 ...
-    ##  $ Date                  : Date[1:188], format: "20-06-22" "20-06-22" ...
-    ##  $ Deaths                : num [1:188] 598 44 852 52 10 ...
-    ##  $ Confirmed             : num [1:188] 29157 1995 11920 855 186 ...
-    ##  $ Recovered             : num [1:188] 8841 1159 8559 796 77 ...
-    ##  $ Deaths_To_Recovered   : num [1:188] 0.0676 0.038 0.0995 0.0653 0.1299 ...
-    ##  $ Deaths_To_Confirmed   : num [1:188] 0.0205 0.0221 0.0715 0.0608 0.0538 ...
-    ##  $ Recovered_To_Confirmed: num [1:188] 0.303 0.581 0.718 0.931 0.414 ...
-    ##  $ Recovered_To_Deaths   : num [1:188] 14.8 26.3 10 15.3 7.7 ...
-    ##  $ Active_To_Confirmed   : num [1:188] 0.67627 0.39699 0.21049 0.00819 0.53226 ...
+Дата найсвіжіших записів в таблиці: 09.11.20.
 
 Створимо спільний підпис для всіх графіків, в якому буде вказано джерело даних та дату останнього звіту:
 
 ``` r
-last_report_date <- strftime(last_stat$Date[1], format="%x")
-
 subtitle <- paste("Дані CSSE Johns Hopkins станом на", last_report_date)
-subtitle
 ```
 
-    ## [1] "Дані CSSE Johns Hopkins станом на 22.06.20"
+Знайдемо дані для окремих країн:
 
 ``` r
 ua <- last_stat[last_stat$Country == 'Ukraine',]
@@ -238,7 +199,7 @@ ua
     ## # A tibble: 1 x 10
     ##   Country Date       Deaths Confirmed Recovered Deaths_To_Recov…
     ##   <fct>   <date>      <dbl>     <dbl>     <dbl>            <dbl>
-    ## 1 Ukraine 20-06-22     1022     38056     17211           0.0594
+    ## 1 Ukraine 2020-11-09   8812    483153    217716           0.0405
     ## # … with 4 more variables: Deaths_To_Confirmed <dbl>,
     ## #   Recovered_To_Confirmed <dbl>, Recovered_To_Deaths <dbl>,
     ## #   Active_To_Confirmed <dbl>
@@ -247,21 +208,21 @@ ua
 ua$Deaths_To_Recovered
 ```
 
-    ## [1] 0.05938063
+    ## [1] 0.04047475
 
 ``` r
 summary(last_stat$Deaths_To_Recovered)
 ```
 
     ##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
-    ##  0.00000  0.01456  0.03990  0.42685  0.07997 32.84409
+    ##  0.00000  0.01164  0.02198  0.12883  0.03795 16.45397
 
 ``` r
 summary(last_stat$Active_To_Confirmed)
 ```
 
     ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-    ## 0.00000 0.07614 0.30824 0.34114 0.54768 0.97851
+    ## 0.00000 0.04637 0.14135 0.24708 0.38034 1.00000
 
 ``` r
 #all_stat[last_stat$Recovered_To_Deaths > be$Recovered_To_Deaths,]
@@ -325,7 +286,11 @@ some_last_stat <- last_stat[last_stat$Country %in% factor(breaks_country),]
 
 <img src="fig_reading_csse_ts/active_chart-1.png" width="672" />
 
-Обчислимо співвідношення підтверджених випадків на певну дату до показника тиждень тому (темп поширення інфекції) todo
+TODO: це не темп поширення інфекції, треба переробити на легший для розуміння показник (наприклад, скільки нових випадків виявлено в порівнянні з тижнем тому)
+
+Обчислимо співвідношення нових підтверджених випадків на певну дату до показника тиждень тому (темп поширення інфекції). Слід зробити наголос на тому, що цей показник обчислений не за «науковим» методом, може бути корисним лише як ілюстрація темпів поширення вірусу.
+
+Слід також зазначити, що показник поточного коефіцієнту відтворення \[R_t\] використовують для дослідження епідемій, але із [деякими застереженнями](https://www.nature.com/articles/d41586-020-02009-w).
 
 ``` r
 some_stat <- some_stat %>%
@@ -335,31 +300,55 @@ some_stat <- some_stat %>%
 confirmed_lag <- some_stat %>%
     select(Date, Country, Confirmed) %>%
     group_by(Country) %>%
-    mutate(Confirmed_Lag = lag(Confirmed, n=7, order_by=Date))
+    mutate(Confirmed_New = Confirmed - lag(Confirmed, n=1, order_by=Date)) %>%
+    mutate(Confirmed_New_Lag7 = lag(Confirmed_New, n=7, order_by=Date))
 
 confirmed_rate <- confirmed_lag %>%
     group_by(Country) %>%
-    mutate(Confirmed_Rate = if_else(Confirmed_Lag > 0,
-                                    Confirmed / Confirmed_Lag,
-                                    1))
+    mutate(Confirmed_Rate = if_else(Confirmed_New_Lag7 == 0,
+                                    1,
+                                    Confirmed_New / Confirmed_New_Lag7))
 ```
+
+На графіку добре видно, що спершу вірус поширювався дуже швидко, коєфіцієнт \[R_t\] часто долав значення 5 та навіть більше.
 
 ``` r
 (ggplot(confirmed_rate)
-    + geom_line(aes(x=Date,y=Confirmed_Rate))
+    + geom_point(aes(x=Date,y=Confirmed_Rate),size=0.5)
     + facet_wrap(vars(Country), ncol = 5)
-    + ylim(c(1,5))
+    + ylim(c(0,5))
     + theme_light()
     + labs(title="Темп поширення інфекції",
            subtitle=subtitle,
-           caption="Якщо дорівнює 1, то епідемію зупинено, кількість хворих стала",
+           caption="Якщо менше 1, то епідемія згасає",
            y="Підтверджених випадків на поточний день до тиждень тому",
            x=""))
 ```
 
-    ## Warning: Removed 7 row(s) containing missing values (geom_path).
+    ## Warning: Removed 314 rows containing missing values (geom_point).
 
 <img src="fig_reading_csse_ts/rate_of_spread-1.png" width="864" />
+
+Тепер побудуємо такий саме графік, але відкинемо значення до 1 травня:
+
+``` r
+confirmed_rate_may <- filter(confirmed_rate, Date > as.Date('2020-05-01'))
+
+(ggplot(confirmed_rate_may)
+    + geom_point(aes(x=Date,y=Confirmed_Rate),size=0.5)
+    + facet_wrap(vars(Country), ncol = 5)
+    + ylim(c(0,5))
+    + theme_light()
+    + labs(title="Темп поширення інфекції після 1 травня 2020 року",
+           subtitle=subtitle,
+           caption="Якщо менше 1, то епідемія згасає",
+           y="Підтверджених випадків на поточний день до тиждень тому",
+           x=""))
+```
+
+    ## Warning: Removed 56 rows containing missing values (geom_point).
+
+<img src="fig_reading_csse_ts/rate_of_spread_may-1.png" width="672" />
 
 Скільки одужало на одного померлого
 -----------------------------------
@@ -370,16 +359,10 @@ confirmed_rate <- confirmed_lag %>%
 summary(last_stat$Recovered_To_Deaths)
 ```
 
-    ##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
-    ##    0.000    7.728   17.115   43.794   44.797 1368.846
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##    0.00   19.36   34.49   64.63   58.38 2070.75
 
-Та поточний показник для України:
-
-``` r
-ua$Recovered_To_Deaths
-```
-
-    ## [1] 16.84051
+Та поточне значення цього показника для України: 24.7067635.
 
 «Рейтинг»
 
@@ -404,7 +387,7 @@ ua$Recovered_To_Deaths
            y=""))
 ```
 
-    ## Warning: Removed 15 rows containing missing values (geom_point).
+    ## Warning: Removed 24 rows containing missing values (geom_point).
 
 <img src="fig_reading_csse_ts/recovered_to_deaths-1.png" width="672" />
 
@@ -412,12 +395,11 @@ ua$Recovered_To_Deaths
 last_stat[last_stat$Deaths_To_Recovered > 1,]
 ```
 
-    ## # A tibble: 3 x 10
+    ## # A tibble: 2 x 10
     ##   Country Date       Deaths Confirmed Recovered Deaths_To_Recov…
     ##   <fct>   <date>      <dbl>     <dbl>     <dbl>            <dbl>
-    ## 1 Haiti   20-06-22       88      5211        24             3.67
-    ## 2 Nether… 20-06-22     6109     49866       186            32.8 
-    ## 3 United… 20-06-22    42731    306761      1322            32.3 
+    ## 1 Nether… 2020-11-09   8112    421503      6157             1.32
+    ## 2 United… 2020-11-09  49329   1216747      2998            16.5 
     ## # … with 4 more variables: Deaths_To_Confirmed <dbl>,
     ## #   Recovered_To_Confirmed <dbl>, Recovered_To_Deaths <dbl>,
     ## #   Active_To_Confirmed <dbl>
@@ -436,20 +418,20 @@ last_stat[last_stat$Deaths_To_Recovered > 33,]
 last_stat[last_stat$Deaths_To_Recovered < ua$Deaths_To_Recovered,]
 ```
 
-    ## # A tibble: 117 x 10
+    ## # A tibble: 146 x 10
     ##    Country Date       Deaths Confirmed Recovered Deaths_To_Recov…
     ##    <fct>   <date>      <dbl>     <dbl>     <dbl>            <dbl>
-    ##  1 Albania 20-06-22       44      1995      1159          0.0380 
-    ##  2 Armenia 20-06-22      360     20588      9131          0.0394 
-    ##  3 Austra… 20-06-22      102      7492      6915          0.0148 
-    ##  4 Austria 20-06-22      690     17380     16241          0.0425 
-    ##  5 Azerba… 20-06-22      161     13207      7168          0.0225 
-    ##  6 Bahrain 20-06-22       65     22407     16862          0.00385
-    ##  7 Bangla… 20-06-22     1502    115786     46755          0.0321 
-    ##  8 Belarus 20-06-22      351     59023     37923          0.00926
-    ##  9 Benin   20-06-22       13       807       253          0.0514 
-    ## 10 Bhutan  20-06-22        0        68        32          0      
-    ## # … with 107 more rows, and 4 more variables: Deaths_To_Confirmed <dbl>,
+    ##  1 Andorra 2020-11-09     75      5437      4332          0.0173 
+    ##  2 Antigu… 2020-11-09      3       131       122          0.0246 
+    ##  3 Argent… 2020-11-09  33907   1250499   1073577          0.0316 
+    ##  4 Armenia 2020-11-09   1580    107466     64910          0.0243 
+    ##  5 Austra… 2020-11-09    907     27669     25454          0.0356 
+    ##  6 Austria 2020-11-09   1454    158746     94627          0.0154 
+    ##  7 Azerba… 2020-11-09    852     66046     49411          0.0172 
+    ##  8 Bahamas 2020-11-09    154      6964      4943          0.0312 
+    ##  9 Bahrain 2020-11-09    329     83632     81225          0.00405
+    ## 10 Bangla… 2020-11-09   6092    421921    339768          0.0179 
+    ## # … with 136 more rows, and 4 more variables: Deaths_To_Confirmed <dbl>,
     ## #   Recovered_To_Confirmed <dbl>, Recovered_To_Deaths <dbl>,
     ## #   Active_To_Confirmed <dbl>
 
@@ -467,21 +449,15 @@ last_stat[last_stat$Deaths_To_Recovered < ua$Deaths_To_Recovered,]
     + theme_light())
 ```
 
-    ## Warning: Removed 3 rows containing non-finite values (stat_bin).
+    ## Warning: Removed 2 rows containing non-finite values (stat_bin).
 
     ## Warning: Removed 2 rows containing missing values (geom_bar).
 
-<img src="fig_reading_csse_ts/unnamed-chunk-17-1.png" width="672" />
+<img src="fig_reading_csse_ts/unnamed-chunk-18-1.png" width="672" />
 
 Поточна летальність, або співвідношення кількості летальних випадків до кількості зареєстрованих (чим менше значення, тим краще):
 
-Поточна летальність для України становить:
-
-``` r
-ua$Deaths_To_Confirmed
-```
-
-    ## [1] 0.02685516
+Поточна летальність для України становить 0.0182385.
 
 Статистичні моменти для всіх країн:
 
@@ -490,7 +466,7 @@ summary(last_stat$Deaths_To_Confirmed)
 ```
 
     ##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
-    ## 0.000000 0.009285 0.021666 0.034058 0.045938 0.265770
+    ## 0.000000 0.009226 0.017387 0.022651 0.027054 0.292129
 
 Гістограма
 
@@ -554,20 +530,6 @@ summary(last_stat$Deaths_To_Confirmed)
 
 <img src="fig_reading_csse_ts/current_lethality_select_countries-1.png" width="864" />
 
-Середнє значення поточної летальності для всіх країн:
-
-``` r
-mean(last_stat$Deaths_To_Confirmed)
-```
-
-    ## [1] 0.03405818
-
-Та глобальне:
-
-``` r
-sum(last_stat$Deaths)/sum(last_stat$Confirmed)
-```
-
-    ## [1] 0.05189466
+Середнє значення поточної летальності для всіх країн: 0.0226514 та глобальне: 0.0248084.
 
 [Повернутись на головну](index.html) або [повідомити про помилку](https://github.com/vityok/covid19_ua/issues)

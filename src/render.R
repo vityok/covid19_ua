@@ -2,6 +2,8 @@ Sys.setlocale(category="LC_ALL",locale="uk_UA.utf8" )
 
 library(rmarkdown)
 
+# area_dyn <- read_csv('https://raw.github.com/VasiaPiven/covid19_ua/master/covid19_by_area_type_hosp_dynamics.csv')
+
 render('regions_dyn.Rmd',
        output_format = github_document())
 
@@ -28,3 +30,8 @@ render('reading_csse_ts.Rmd',
 
 render('decompose.Rmd',
        output_format = github_document())
+
+render_pdf <- function () {
+    render('regions_dyn.Rmd',
+           output_format = pdf_document())
+}

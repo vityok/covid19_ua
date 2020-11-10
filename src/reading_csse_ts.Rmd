@@ -49,33 +49,43 @@ library(tidyverse)
 
 Хоча стовпчик &laquo;Дата&raquo; может бути не завжди потрібен.
 
-Зчитування даних про кількість підтверджених випадків.
+Зчитати дані про кількість підтверджених випадків можна або з копії
+репозиторію на локальній файловій системі:
 
 ```{r}
 confirmed_global_csv <- read_csv('../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv')
+```
+
+Або ж безпосередньо з серверу GitHub завантажити найсвіжішу версію:
+
+```{r}
+confirmed_global_csv <- read_csv('https://raw.github.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv')
+```
+
+Починаємо перетворення структури таблиці:
+
+```{r}
 
 confirmed_global <- confirmed_global_csv %>%
     pivot_longer(cols=contains("/20"), names_to="Date", values_to="Confirmed") %>%
-    mutate(Date=as.Date(Date,format='%m/%d/%Y'))
+    mutate(Date=as.Date(Date,format='%m/%d/%y'))
 
 confirmed_global_sum <- confirmed_global %>%
     select(Country = `Country/Region`, Confirmed, Date) %>%
     group_by(Country, Date) %>%
     summarise(Confirmed = sum(Confirmed))
-
-head(confirmed_global_sum)
-
-length(confirmed_global_sum$Confirmed)
 ```
 
 Зчитування даних про кількість летальних випадків.
 
 ```{r}
-deaths_global_csv <- read_csv('../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv')
+## deaths_global_csv <- read_csv('../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv')
+
+deaths_global_csv <- read_csv('https://raw.github.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv')
 
 deaths_global <- deaths_global_csv %>%
     pivot_longer(cols=contains("/20"), names_to="Date", values_to="Deaths") %>%
-    mutate(Date=as.Date(Date,format='%m/%d/%Y'))
+    mutate(Date=as.Date(Date,format='%m/%d/%y'))
 
 deaths_global_sum <- deaths_global %>%
     select(Country = `Country/Region`, Deaths, Date) %>%
@@ -86,11 +96,13 @@ deaths_global_sum <- deaths_global %>%
 Зчитування даних про кількість тих, хто одужав.
 
 ```{r}
-recovered_global_csv <- read_csv('../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv')
+## recovered_global_csv <- read_csv('../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv')
+
+recovered_global_csv <- read_csv('https://raw.github.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv')
 
 recovered_global <- recovered_global_csv %>%
     pivot_longer(cols=contains("/20"), names_to="Date", values_to="Recovered") %>%
-    mutate(Date=as.Date(Date,format='%m/%d/%Y'))
+    mutate(Date=as.Date(Date,format='%m/%d/%y'))
 
 recovered_global_sum <- recovered_global %>%
     select(Country = `Country/Region`, Recovered, Date) %>%
@@ -104,10 +116,6 @@ recovered_global_sum <- recovered_global %>%
 all_sum_raw <- deaths_global_sum %>%
     full_join(confirmed_global_sum, by=c('Country', 'Date')) %>%
     full_join(recovered_global_sum, by=c('Country', 'Date'))
-
-head(all_sum_raw)
-
-length(all_sum_raw$Country)
 ```
 
 Обчислимо співвідношення:
@@ -129,27 +137,25 @@ all_stat <- all_sum_raw %>%
                / Confirmed)) %>%
     ungroup() %>%
     mutate(Country = factor(Country))
-
-str(all_stat)
 ```
 
-Останній запис в таблиці:
+Обчислюємо максимальну дату та знаходимо найсвіжіші дані:
 
 ```{r}
 last_stat <- all_stat[all_stat$Date == max(all_stat$Date), ]
-
-str(last_stat)
+last_report_date <- strftime(last_stat$Date[1], format="%x")
 ```
+
+Дата найсвіжіших записів в таблиці: `r last_report_date`.
 
 Створимо спільний підпис для всіх графіків, в якому буде вказано
 джерело даних та дату останнього звіту:
 
 ```{r}
-last_report_date <- strftime(last_stat$Date[1], format="%x")
-
 subtitle <- paste("Дані CSSE Johns Hopkins станом на", last_report_date)
-subtitle
 ```
+
+Знайдемо дані для окремих країн:
 
 ```{r}
 ua <- last_stat[last_stat$Country == 'Ukraine',]
@@ -168,8 +174,6 @@ summary(last_stat$Active_To_Confirmed)
 ```
 
 ## Загальна динаміка
-
-
 
 ```{r}
 breaks_country <- c("Ukraine", "Belarus", "Poland", "Germany", "France",
@@ -218,11 +222,19 @@ some_last_stat <- last_stat[last_stat$Country %in% factor(breaks_country),]
     + theme_light())
 ```
 
-Обчислимо співвідношення підтверджених випадків на певну дату до показника
-тиждень тому (темп поширення інфекції) todo
+TODO: це не темп поширення інфекції, треба переробити на легший для розуміння показник (наприклад, скільки нових випадків виявлено в порівнянні з тижнем тому)
+
+Обчислимо співвідношення нових підтверджених випадків на певну дату до
+показника тиждень тому (темп поширення інфекції). Слід зробити наголос
+на тому, що цей показник обчислений не за &laquo;науковим&raquo;
+методом, може бути корисним лише як ілюстрація темпів поширення
+вірусу.
+
+Слід також зазначити, що показник поточного коефіцієнту відтворення
+$$R_t$$ використовують для дослідження епідемій, але із [деякими
+застереженнями](https://www.nature.com/articles/d41586-020-02009-w).
 
 ```{r}
-
 some_stat <- some_stat %>%
     group_by(Country,Date) %>%
     mutate()
@@ -230,24 +242,45 @@ some_stat <- some_stat %>%
 confirmed_lag <- some_stat %>%
     select(Date, Country, Confirmed) %>%
     group_by(Country) %>%
-    mutate(Confirmed_Lag = lag(Confirmed, n=7, order_by=Date))
+    mutate(Confirmed_New = Confirmed - lag(Confirmed, n=1, order_by=Date)) %>%
+    mutate(Confirmed_New_Lag7 = lag(Confirmed_New, n=7, order_by=Date))
 
 confirmed_rate <- confirmed_lag %>%
     group_by(Country) %>%
-    mutate(Confirmed_Rate = if_else(Confirmed_Lag > 0,
-                                    Confirmed / Confirmed_Lag,
-                                    1))
+    mutate(Confirmed_Rate = if_else(Confirmed_New_Lag7 == 0,
+                                    1,
+                                    Confirmed_New / Confirmed_New_Lag7))
 ```
+
+На графіку добре видно, що спершу вірус поширювався дуже швидко,
+коєфіцієнт $$R_t$$ часто долав значення 5 та навіть більше.
 
 ```{r rate_of_spread, fig.width=9}
 (ggplot(confirmed_rate)
-    + geom_line(aes(x=Date,y=Confirmed_Rate))
+    + geom_point(aes(x=Date,y=Confirmed_Rate),size=0.5)
     + facet_wrap(vars(Country), ncol = 5)
-    + ylim(c(1,5))
+    + ylim(c(0,5))
     + theme_light()
     + labs(title="Темп поширення інфекції",
            subtitle=subtitle,
-           caption="Якщо дорівнює 1, то епідемію зупинено, кількість хворих стала",
+           caption="Якщо менше 1, то епідемія згасає",
+           y="Підтверджених випадків на поточний день до тиждень тому",
+           x=""))
+```
+
+Тепер побудуємо такий саме графік, але відкинемо значення до 1 травня:
+
+```{r rate_of_spread_may}
+confirmed_rate_may <- filter(confirmed_rate, Date > as.Date('2020-05-01'))
+
+(ggplot(confirmed_rate_may)
+    + geom_point(aes(x=Date,y=Confirmed_Rate),size=0.5)
+    + facet_wrap(vars(Country), ncol = 5)
+    + ylim(c(0,5))
+    + theme_light()
+    + labs(title="Темп поширення інфекції після 1 травня 2020 року",
+           subtitle=subtitle,
+           caption="Якщо менше 1, то епідемія згасає",
            y="Підтверджених випадків на поточний день до тиждень тому",
            x=""))
 ```
@@ -261,11 +294,7 @@ confirmed_rate <- confirmed_lag %>%
 summary(last_stat$Recovered_To_Deaths)
 ```
 
-Та поточний показник для України:
-
-```{r}
-ua$Recovered_To_Deaths
-```
+Та поточне значення цього показника для України: `r ua$Recovered_To_Deaths`.
 
 &laquo;Рейтинг&raquo;
 
@@ -317,10 +346,7 @@ last_stat[last_stat$Deaths_To_Recovered < ua$Deaths_To_Recovered,]
 Поточна летальність, або співвідношення кількості летальних випадків
 до кількості зареєстрованих (чим менше значення, тим краще):
 
-Поточна летальність для України становить:
-```{r}
-ua$Deaths_To_Confirmed
-```
+Поточна летальність для України становить `r ua$Deaths_To_Confirmed`.
 
 Статистичні моменти для всіх країн:
 
@@ -382,16 +408,8 @@ summary(last_stat$Deaths_To_Confirmed)
            y="Частка летальних випадків до всіх зареєстрованих"))
 ```
 
-Середнє значення поточної летальності для всіх країн:
-
-```{r}
-mean(last_stat$Deaths_To_Confirmed)
-```
-
-Та глобальне:
-```{r}
-sum(last_stat$Deaths)/sum(last_stat$Confirmed)
-```
+Середнє значення поточної летальності для всіх країн: `r mean(last_stat$Deaths_To_Confirmed)`
+та глобальне: `r sum(last_stat$Deaths)/sum(last_stat$Confirmed)`.
 
 [Повернутись на головну](index.html) або [повідомити про
 помилку](https://github.com/vityok/covid19_ua/issues)

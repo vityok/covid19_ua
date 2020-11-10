@@ -12,11 +12,11 @@ output:
 Мета: отримати тренди, сезонні коливання, випадкові відхилення різними методами.
 
 Дані:
- - Сумарна кількість:
+- Сумарна кількість:
   - підтверджених випадків для України,
   - летальних випадків для України,
   - одужання для України,
- - Добова кількість підтверджених випадків для:
+- Добова кількість підтверджених випадків для:
   - України
   - Київ
 
@@ -28,24 +28,27 @@ knitr::opts_chunk$set(fig.retina=2, fig.path = "fig_decompose/")
 
 # Огляд
 
- - Сумарна кількість:
+- Сумарна кількість:
 
-  - підтверджених випадків для України,
+ - підтверджених випадків для України,
 
-  - летальних випадків для України,
+ - летальних випадків для України,
 
-  - одужання для України,
+ - одужання для України,
 
 Інший метод побудови, лінії різного кольору.
 
-```{r}
-library(tidyverse)
+```{r, warning = FALSE, message = FALSE}
+library(fpp3)
+library(fable)
 library(tsibble)
 library(feasts)
+library(tidyverse)
 ```
 
 ```{r, warning = FALSE, message = FALSE}
-area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
+## area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
+area_dyn <- read_csv('https://raw.github.com/VasiaPiven/covid19_ua/master/covid19_by_area_type_hosp_dynamics.csv')
 
 daily_area_dyn <- area_dyn %>%
     select(zvit_date, new_susp, new_confirm, new_death, active_confirm) %>%
@@ -273,6 +276,16 @@ fit_dcmp_active %>%
     forecast() %>%
     autoplot(daily_area_dyn_ma)
 ```
+
+# Декомпозиція ggseas
+
+# 
+todo: https://github.com/ellisp/ggseas
+
+```{r}
+library(ggseas)
+```
+
 
 [Повернутись на головну](index.html) або [повідомити про
 помилку](https://github.com/vityok/covid19_ua/issues)

@@ -1,5 +1,7 @@
 #!/bin/sh
 
+rm -Rf --preserve-root fig_*
+
 Rscript render.R
 
 cp *.md ../docs

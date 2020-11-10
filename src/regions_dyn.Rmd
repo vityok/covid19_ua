@@ -36,6 +36,7 @@ covid19\_ua](https://github.com/VasiaPiven/covid19_ua).
 ```{r, message = FALSE}
 library(tidyverse)
 library(ggridges)
+library(slider)
 ```
 
 Якщо системні налаштування локалі не співпадають з бажаними, їх можна змінити
@@ -51,8 +52,16 @@ Sys.setlocale(category="LC_ALL",locale="uk_UA.utf8" )
 `read.csv`. Таким чином отримаємо дані одразу в структурі даних,
 зручній для подальшої роботи.
 
-```{r}
+Як джерело даних можна вказати файл у локальній файловій системі:
+
+```{r, eval=FALSE}
 area_dyn <- read_csv('../covid19_by_area_type_hosp_dynamics.csv')
+```
+
+Або ж завантажити найсвіжішу копію безпосередньо з серверів GitHub:
+
+```{r, warning=FALSE, message = FALSE}
+area_dyn <- read_csv('https://raw.github.com/VasiaPiven/covid19_ua/master/covid19_by_area_type_hosp_dynamics.csv')
 ```
 
 Функція `read_csv`, окрім власне зчитування самої таблиці, іще й
@@ -70,10 +79,9 @@ head(area_dyn)
 кількість стовпчиків, перелічемо їх для зручності подальшого використання
 в скрипті:
 
-zvit_date, registration_area, priority_hosp_area, edrpou_hosp,
-legal_entity_name_hosp, legal_entity_lat, legal_entity_lng,
-person_gender, person_age_group, add_conditions, is_medical_worker,
-new_susp, new_confirm, active_confirm, new_death, new_recover.
+```{r}
+names(area_dyn)
+```
 
 Зараз нам цікаві лише кілька:
 
@@ -89,10 +97,10 @@ new_susp, new_confirm, active_confirm, new_death, new_recover.
 
 ```{r}
 daily_area_reg_dyn <- area_dyn %>%
-    select(zvit_date, priority_hosp_area, new_susp, new_confirm, new_death) %>%
+    select(zvit_date, registration_area, new_susp, new_confirm, new_death) %>%
     mutate(registration_area=factor(case_when(
-               priority_hosp_area == "м. Київ" ~ "м. Київ",
-               TRUE ~ stringr::str_to_title(priority_hosp_area)))) %>%
+               registration_area == "м. Київ" ~ "м. Київ",
+               TRUE ~ stringr::str_to_title(registration_area)))) %>%
     group_by(zvit_date, registration_area) %>%
     summarise(new_susp = sum(new_susp),
               new_confirm = sum(new_confirm),
@@ -100,6 +108,99 @@ daily_area_reg_dyn <- area_dyn %>%
 ```
 
 Нарешті, все готово для створення графіка.
+
+## Огляд
+
+Та почнемо з побудови узагальнених даних для всієї країни. Для цього
+також знадобиться підрахунок сум, але в розрізі лише дат, без
+урахування регіонів:
+
+```{r}
+daily_sum_dyn <- daily_area_reg_dyn %>%
+    group_by(zvit_date) %>%
+    summarise(new_susp = sum(new_susp),
+              new_confirm = sum(new_confirm),
+              new_death = sum(new_death)) %>%
+    filter(zvit_date > as.Date('2020-04-01'))
+```
+
+```{r ukraine_dyn, fig.height=8.5}
+ggplot(daily_sum_dyn) +
+    geom_line(aes(zvit_date, new_susp, colour='orange')) +
+    geom_line(aes(zvit_date, new_confirm, colour='blue')) +
+    geom_line(aes(zvit_date, new_death, colour='red')) +
+    scale_color_discrete(name="",
+                         labels=c("Підтверджені",
+                                  "Підозри",
+                                  "Летальні")) +
+    theme_light() +
+    theme(legend.position = "bottom") +
+    labs(title="Загальний огляд перебігу епідемії COVID-19",
+         x = "Дата",
+         y = "Випадків за день",
+         caption = "Дані: ЦГЗ та НСЗУ")
+```
+
+Зробімо іще одне невеличке дослідження: зобразимо нормалізовані
+значення цих показників на гафіку.
+
+```{r}
+max_susp <- max(daily_sum_dyn$new_susp)
+max_confirm <- max(daily_sum_dyn$new_confirm)
+max_death <- max(daily_sum_dyn$new_death)
+
+daily_norm_dyn <- daily_sum_dyn %>%
+    mutate(new_susp = new_susp / max_susp,
+           new_confirm = new_confirm / max_confirm,
+           new_death = new_death / max_death) %>%
+    mutate(new_susp_7ma = slide_dbl(new_susp, mean, .size = 7, .align = "center"),
+           new_confirm_7ma = slide_dbl(new_confirm, mean, .size = 7, .align = "center"),
+           new_death_7ma = slide_dbl(new_death, mean, .size = 7, .align = "center"))
+```
+
+```{r}
+library(gridExtra)
+library(grid)
+
+daily_norm_dyn_confirm_death <- daily_norm_dyn %>%
+    select(zvit_date, new_confirm_7ma, new_death_7ma) %>%
+    pivot_longer(cols=contains('new_'),
+                 names_to='metric',
+                 values_to='val')
+
+daily_norm_dyn_confirm_susp <- daily_norm_dyn %>%
+    select(zvit_date, new_confirm_7ma, new_susp_7ma) %>%
+    pivot_longer(cols=contains('new_'),
+                 names_to='metric',
+                 values_to='val')
+
+breaks_metric <- c('new_confirm_7ma', 'new_susp_7ma', 'new_death_7ma')
+labels_metric <- c('Підтверджених', 'Підозр', 'Летальних')
+
+confirm_death_plot <- ggplot(daily_norm_dyn_confirm_death, aes(zvit_date, val)) +
+    geom_line(aes(color = metric)) +
+    theme_light() +
+    scale_color_discrete(breaks=breaks_metric, labels=labels_metric) +
+    theme(legend.position = "bottom") +
+    labs(title="Підтверджених та летальних",
+         x = "",
+         y = "Випадків за день",
+         caption = "")
+
+confirm_susp_plot <- ggplot(daily_norm_dyn_confirm_susp, aes(zvit_date, val)) +
+    geom_line(aes(color = metric)) +
+    theme_light() +
+    scale_color_discrete(breaks=breaks_metric, labels=labels_metric) +
+    theme(legend.position = "bottom") +
+    labs(title="Підозр та підтверджених",
+         x = "Дата",
+         y = "Випадків за день",
+         caption = "Значення показників нормалізовано за максимальним. Дані: ЦГЗ та НСЗУ")
+
+
+
+grid.arrange(confirm_death_plot, confirm_susp_plot, ncol = 1)
+```
 
 ## Підозри на захворювання COVID-19
 
@@ -118,7 +219,7 @@ plot_susp <- ggplot(daily_area_reg_dyn, aes(x=zvit_date, y=new_susp))
 ```
 
 Далі до графіка слід додати визначення графічних об'єктів, що будуть
-на ньому зображено:
+на ньому зображені, в нашому випадку, це `geom_line`:
 
 ```{r}
 plot_susp <- plot_susp + geom_line()
